@@ -1,34 +1,34 @@
-execve("./fork.o", ["./fork.o"], 0x7ffcbd3dadf8 /* 78 vars */) = 0
-brk(NULL)                               = 0x557c39321000
+execve("./fork.o", ["./fork.o"], 0x7ffdd9d11f28 /* 78 vars */) = 0
+brk(NULL)                               = 0x55db2b2c5000
 access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
 access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
 openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
 fstat(3, {st_mode=S_IFREG|0644, st_size=95204, ...}) = 0
-mmap(NULL, 95204, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fb4c5e74000
+mmap(NULL, 95204, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fad8901d000
 close(3)                                = 0
 access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
 read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\34\2\0\0\0\0\0"..., 832) = 832
 fstat(3, {st_mode=S_IFREG|0755, st_size=2030544, ...}) = 0
-mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fb4c5e72000
-mmap(NULL, 4131552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fb4c5874000
-mprotect(0x7fb4c5a5b000, 2097152, PROT_NONE) = 0
-mmap(0x7fb4c5c5b000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e7000) = 0x7fb4c5c5b000
-mmap(0x7fb4c5c61000, 15072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fb4c5c61000
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fad8901b000
+mmap(NULL, 4131552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fad88a1d000
+mprotect(0x7fad88c04000, 2097152, PROT_NONE) = 0
+mmap(0x7fad88e04000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e7000) = 0x7fad88e04000
+mmap(0x7fad88e0a000, 15072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fad88e0a000
 close(3)                                = 0
-arch_prctl(ARCH_SET_FS, 0x7fb4c5e734c0) = 0
-mprotect(0x7fb4c5c5b000, 16384, PROT_READ) = 0
-mprotect(0x557c3851b000, 4096, PROT_READ) = 0
-mprotect(0x7fb4c5e8c000, 4096, PROT_READ) = 0
-munmap(0x7fb4c5e74000, 95204)           = 0
-clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7fb4c5e73790) = 30353
-getpid()                                = 30352
+arch_prctl(ARCH_SET_FS, 0x7fad8901c4c0) = 0
+mprotect(0x7fad88e04000, 16384, PROT_READ) = 0
+mprotect(0x55db2af80000, 4096, PROT_READ) = 0
+mprotect(0x7fad89035000, 4096, PROT_READ) = 0
+munmap(0x7fad8901d000, 95204)           = 0
+clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7fad8901c790) = 31927
+getpid()                                = 31926
 fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 0), ...}) = 0
-brk(NULL)                               = 0x557c39321000
-brk(0x557c39342000)                     = 0x557c39342000
-write(1, "PID do processo pai: 30352\n", 27) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
---- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=30353, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
-write(1, "PID do processo pai: 30352\n", 27) = 27
+brk(NULL)                               = 0x55db2b2c5000
+brk(0x55db2b2e6000)                     = 0x55db2b2e6000
+write(1, "PID do processo pai: 31926\n", 27) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=31927, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+write(1, "PID do processo pai: 31926\n", 27) = 27
 exit_group(0)                           = ?
 +++ exited with 0 +++
 % time     seconds  usecs/call     calls    errors syscall
