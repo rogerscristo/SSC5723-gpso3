@@ -29,7 +29,7 @@ Um breve descrição de cada system call do `strace` é apresentada abaixo, de m
 | brk | extende o ponteiro para a heap |
 
 ### 1.2 Gerenciamento de processos
-Nesta etapa decidimos por implementar e analisar três chamadas de sistema: `fork`, `exit` e `wait`. Para acessar o código de cada uma das três entre em [https://github.com/rogerscristo/SSC5723-gpso3/tree/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Processos/](https://github.com/rogerscristo/SSC5723-gpso3/tree/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Processos/)
+Nesta etapa decidimos por implementar e analisar três chamadas de sistema: `fork`, `waitpid` e `execve`. Para acessar o código de cada uma das três entre em [https://github.com/rogerscristo/SSC5723-gpso3/tree/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Processos/](https://github.com/rogerscristo/SSC5723-gpso3/tree/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Processos/)
 
 #### 1.2.1	fork
 A chamada `fork` cria uma duplicata do processo atual. O processo criado a partir do `fork` é chamado processo filho, enquanto o processo do qual o `fork` é chamado é denominado processo pai. É importante notar que apesar de ambos os processos serem identicos, estes são executados em espaços distintos de memória e possuem PIDs diferentes.
@@ -102,14 +102,17 @@ Salienta-se que em momento algum a chamada `fork` é demonstrada no log do `stra
  - [https://thorstenball.com/blog/2014/06/13/where-did-fork-go/](https://thorstenball.com/blog/2014/06/13/where-did-fork-go/)
  - [https://stackoverflow.com/questions/18904292/is-it-true-that-fork-calls-clone-internally](https://stackoverflow.com/questions/18904292/is-it-true-that-fork-calls-clone-internally)
 
-#### 1.2.2	exit
+#### 1.2.2	waitpid
 TODO: Fazer descrição similar a da seção fork
 
-#### 1.2.3	wait
+#### 1.2.3	execve
 TODO: Fazer descrição similar a da seção fork
 
 ### 1.3 Gerenciamento de arquivos
 TODO: Fazer descrição similar a da seção Gerenciamento de processos
+
+#### 1.3.1	stat
+TODO: Fazer descrição similar a da seção fork
 
 ### 1.4 Gerenciamento de memória
 TODO: Fazer descrição similar a da seção Gerenciamento de processos
