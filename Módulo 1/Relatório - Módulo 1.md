@@ -103,11 +103,13 @@ Salienta-se que em momento algum a chamada `fork` é demonstrada no log do `stra
  - [https://stackoverflow.com/questions/18904292/is-it-true-that-fork-calls-clone-internally](https://stackoverflow.com/questions/18904292/is-it-true-that-fork-calls-clone-internally)
 
 #### 1.2.2	exit
-A chamada `exit` 
+TODO: Fazer descrição similar a da seção fork
 
 #### 1.2.3	wait
-A chamada `wait` 
+TODO: Fazer descrição similar a da seção fork
 
 ### 1.3 Gerenciamento de arquivos
+TODO: Fazer descrição similar a da seção Gerenciamento de processos
 
 ### 1.4 Gerenciamento de memória
+TODO: Fazer descrição similar a da seção Gerenciamento de processos
