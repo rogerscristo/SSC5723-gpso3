@@ -17,7 +17,7 @@ Alunos: Rogers Silva de Cristo          10355930
 #include <errno.h>
 #include <string.h>
 
-void main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
     char *pathArquivo = "./arquivo.txt";
     int file = open(pathArquivo, O_RDWR | O_APPEND | O_CREAT, S_IRWXU | S_IRWXG);
     int posicaoPonteiro = lseek(file, 0L, SEEK_SET);
