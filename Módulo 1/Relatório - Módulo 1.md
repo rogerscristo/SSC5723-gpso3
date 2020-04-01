@@ -189,6 +189,7 @@ O código implementado para utilização do `execve()` nesse projeto pode ser ac
     strace -o strace_execve_dump -C ./execve.o
 
 O retorno do strace para o código desenvolvido é apresentado abaixo:
+
     execve("./execve.o", ["./execve.o"], 0x7ffeb254df38 /* 78 vars */) = 0
     brk(NULL)                               = 0x558e6700f000
     access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
@@ -263,10 +264,100 @@ O retorno do strace para o código desenvolvido é apresentado abaixo:
 A execução do `strace` para o código proposto revela duas chamadas do `execve()`. A primeira referece a execução do binário gerado pela compilação do código `execve.c`. As chamadas de sistema na sequência realizam as alocações em disco e memória necessárias. A segunda chamada do `execve` referece a execução da função `echo` implementada no código em C.
 
 ### 1.3 Gerenciamento de arquivos
-TODO: Fazer descrição similar a da seção Gerenciamento de processos
+As três chamadas de sistema implementadas para demonstrar o gerenciamento de arquivos foram: `stat`, `lseek` e `open`. Para acessar o código de cada uma das três entre em https://github.com/rogerscristo/SSC5723-gpso3/tree/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Arquivos.
 
 #### 1.3.1	stat
-TODO: Fazer descrição similar a da seção fork
+A função `execve()` serve para acionar a execução de um programa descrito no argumento `filename`. A entrada desse argumento pode ser tanto um arquivo binário executável quanto um script. Quando obtém sucesso na abertura do arquivo, o `execve()` não possui retorno, enquanto em caso de erro retorna -1.
+
+O código implementado para utilização do `stat()` nesse projeto pode ser acessado em https://github.com/rogerscristo/SSC5723-gpso3/blob/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Arquivos/stat/stat.c. Neste código, a função `stat()` é invocada para retornar algumas estatísticas a repeito do próprio arquivo `stat.c` (Permissões do arquivo, id do despositivo no qual o arquivo `stat.c` reside, tamanho do arquivo e horário da última alteração no arquivo).
+
+Para realizar a análise utilizando o `strace` o seguinte comando foi executado:
+
+    strace -o strace_stat_dump -C ./stat.o
+
+O retorno do strace para o código desenvolvido é apresentado abaixo:
+
+    execve("./stat.o", ["./stat.o"], 0x7ffe79f9b1c8 /* 78 vars */) = 0
+    brk(NULL)                               = 0x563076f14000
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+    fstat(3, {st_mode=S_IFREG|0644, st_size=95204, ...}) = 0
+    mmap(NULL, 95204, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f67a4897000
+    close(3)                                = 0
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+    read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\34\2\0\0\0\0\0"..., 832) = 832
+    fstat(3, {st_mode=S_IFREG|0755, st_size=2030544, ...}) = 0
+    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f67a4895000
+    mmap(NULL, 4131552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f67a4297000
+    mprotect(0x7f67a447e000, 2097152, PROT_NONE) = 0
+    mmap(0x7f67a467e000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e7000) = 0x7f67a467e000
+    mmap(0x7f67a4684000, 15072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f67a4684000
+    close(3)                                = 0
+    arch_prctl(ARCH_SET_FS, 0x7f67a48964c0) = 0
+    mprotect(0x7f67a467e000, 16384, PROT_READ) = 0
+    mprotect(0x563075107000, 4096, PROT_READ) = 0
+    mprotect(0x7f67a48af000, 4096, PROT_READ) = 0
+    munmap(0x7f67a4897000, 95204)           = 0
+    stat("stat.c", {st_mode=S_IFREG|0664, st_size=1003, ...}) = 0
+    fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 0), ...}) = 0
+    brk(NULL)                               = 0x563076f14000
+    brk(0x563076f35000)                     = 0x563076f35000
+    write(1, "Stats do arquivo stats.c\n", 25) = 25
+    write(1, "Permiss\303\265es do arquivo: st_mode "..., 41) = 41
+    write(1, "ID do dispositivo no qual o arqu"..., 65) = 65
+    write(1, "Tamanho do arquivo (bytes): st_s"..., 43) = 43
+    write(1, "Hor\303\241rio da \303\272ltima altera\303\247\303\243o "..., 66) = 66
+    exit_group(0)                           = ?
+    +++ exited with 0 +++
+    % time     seconds  usecs/call     calls    errors syscall
+    ------ ----------- ----------- --------- --------- ----------------
+    17.65    0.000084          28         3           brk
+    15.55    0.000074          15         5           write
+    12.82    0.000061          15         4           mprotect
+    12.61    0.000060          60         1           execve
+    10.50    0.000050          10         5           mmap
+    9.45    0.000045          45         1           munmap
+    5.67    0.000027           9         3         3 access
+    5.46    0.000026           9         3           fstat
+    4.83    0.000023          12         2           openat
+    2.31    0.000011          11         1           stat
+    1.26    0.000006           3         2           close
+    1.05    0.000005           5         1           read
+    0.84    0.000004           4         1           arch_prctl
+    ------ ----------- ----------- --------- --------- ----------------
+    100.00    0.000476                    32         3 total
+
+
+A única chamada `stat` do log se refere a execução de todos os 4 parâmetros solicitados: `st_mode`, `st_size`, `st_dev` e `st_mtime`. Todos estes modos são declarados numa `struct` presente em sua implementação:
+
+``` c
+struct stat {
+    dev_t     st_dev;         /* ID of device containing file */
+    ino_t     st_ino;         /* Inode number */
+    mode_t    st_mode;        /* File type and mode */
+    nlink_t   st_nlink;       /* Number of hard links */
+    uid_t     st_uid;         /* User ID of owner */
+    gid_t     st_gid;         /* Group ID of owner */
+    dev_t     st_rdev;        /* Device ID (if special file) */
+    off_t     st_size;        /* Total size, in bytes */
+    blksize_t st_blksize;     /* Block size for filesystem I/O */
+    blkcnt_t  st_blocks;      /* Number of 512B blocks allocated */
+
+    /* Since Linux 2.6, the kernel supports nanosecond
+        precision for the following timestamp fields.
+        For the details before Linux 2.6, see NOTES. */
+
+    struct timespec st_atim;  /* Time of last access */
+    struct timespec st_mtim;  /* Time of last modification */
+    struct timespec st_ctim;  /* Time of last status change */
+
+    #define st_atime st_atim.tv_sec      /* Backward compatibility */
+    #define st_mtime st_mtim.tv_sec
+    #define st_ctime st_ctim.tv_sec
+};
+```
 
 ### 1.4 Gerenciamento de memória
 TODO: Fazer descrição similar a da seção Gerenciamento de processos
