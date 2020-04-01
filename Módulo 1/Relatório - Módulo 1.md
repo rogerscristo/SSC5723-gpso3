@@ -359,5 +359,25 @@ struct stat {
 };
 ```
 
+#### 1.3.2	lseek
+TODO: Fazer descrição nos moldes das anteriores.
+
+#### 1.3.3	open
+TODO: Fazer descrição nos moldes das anteriores.
+
 ### 1.4 Gerenciamento de memória
 TODO: Fazer descrição similar a da seção Gerenciamento de processos
+
+#### 1.4.1	getrlimit
+TODO: Fazer descrição nos moldes das anteriores.
+
+#### 1.4.2	setrlimit
+TODO: Fazer descrição nos moldes das anteriores.
+
+#### 1.4.3	sbrk
+TODO: Fazer descrição nos moldes das anteriores.
+
+-------
+## 2. Processos CPU-bound e I-O bound  
+
+Cada grupo deverá desenvolver ao menos 2 programas que exibam o comportamento esperado para processos CPU-bound e I-O bound, tal como foi informado em sala de aula. Pode-se utilizar os programas desenvolvidos na etapa anterior, desde que eles atendam ao requisito especificado. 
