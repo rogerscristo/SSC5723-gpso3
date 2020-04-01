@@ -103,10 +103,164 @@ Salienta-se que em momento algum a chamada `fork` é demonstrada no log do `stra
  - [https://stackoverflow.com/questions/18904292/is-it-true-that-fork-calls-clone-internally](https://stackoverflow.com/questions/18904292/is-it-true-that-fork-calls-clone-internally)
 
 #### 1.2.2	waitpid
-TODO: Fazer descrição similar a da seção fork
+Existem algumas situações nas quais pode ser necessário que um processo pai monitore possíveis mudanças de status em um determinado processo filho. A função `waitpid()` permite que um processo pai monitore o status de um filho específico. Por default, a função monitora apenas o status de `terminate`, porém demais status podem ser configurados via o argumento `options`.
+
+O código implementado para utilização do `waitpid` nesse projeto pode ser acessado em https://github.com/rogerscristo/SSC5723-gpso3/blob/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Processos/waitpid/waitpid.c. Para realizar a análise utilizando o `strace` o seguinte comando foi executado:
+
+    strace -o strace_waitpid_dump -C ./waitpid.o
+
+O retorno do strace para o código desenvolvido é apresentado abaixo:
+
+    execve("./waitpid.o", ["./waitpid.o"], 0x7ffed0f67428 /* 73 vars */) = 0
+    brk(NULL)                               = 0x5560f9a93000
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+    fstat(3, {st_mode=S_IFREG|0644, st_size=95204, ...}) = 0
+    mmap(NULL, 95204, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fe284837000
+    close(3)                                = 0
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+    read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\34\2\0\0\0\0\0"..., 832) = 832
+    fstat(3, {st_mode=S_IFREG|0755, st_size=2030544, ...}) = 0
+    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fe284835000
+    mmap(NULL, 4131552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fe284237000
+    mprotect(0x7fe28441e000, 2097152, PROT_NONE) = 0
+    mmap(0x7fe28461e000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e7000) = 0x7fe28461e000
+    mmap(0x7fe284624000, 15072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fe284624000
+    close(3)                                = 0
+    arch_prctl(ARCH_SET_FS, 0x7fe2848364c0) = 0
+    mprotect(0x7fe28461e000, 16384, PROT_READ) = 0
+    mprotect(0x5560f8799000, 4096, PROT_READ) = 0
+    mprotect(0x7fe28484f000, 4096, PROT_READ) = 0
+    munmap(0x7fe284837000, 95204)           = 0
+    getpid()                                = 7424
+    fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 0), ...}) = 0
+    brk(NULL)                               = 0x5560f9a93000
+    brk(0x5560f9ab4000)                     = 0x5560f9ab4000
+    write(1, "Processo pai com PID: 7424\n\n", 28) = 28
+    clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7fe284836790) = 7425
+    clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7fe284836790) = 7426
+    clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7fe284836790) = 7427
+    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=7425, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+    wait4(7425, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 7425
+    write(1, "\n", 1)                       = 1
+    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=7426, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+    write(1, "Finalizou o processo filho com P"..., 41) = 41
+    write(1, "Restam 2 processos filhos ativos"..., 33) = 33
+    wait4(7426, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 7426
+    write(1, "\n", 1)                       = 1
+    write(1, "Finalizou o processo filho com P"..., 41) = 41
+    write(1, "Restam 1 processos filhos ativos"..., 33) = 33
+    wait4(7427, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 7427
+    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=7427, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+    write(1, "\n", 1)                       = 1
+    write(1, "Finalizou o processo filho com P"..., 41) = 41
+    write(1, "Restam 0 processos filhos ativos"..., 33) = 33
+    exit_group(0)                           = ?
+    +++ exited with 0 +++
+    % time     seconds  usecs/call     calls    errors syscall
+    ------ ----------- ----------- --------- --------- ----------------
+    23.02    0.000154          31         5           mmap
+    18.54    0.000124          31         4           mprotect
+    10.16    0.000068          23         3         3 access
+    9.57    0.000064          32         2           openat
+    8.37    0.000056          56         1           munmap
+    7.47    0.000050          17         3           brk
+    7.32    0.000049          16         3           fstat
+    4.48    0.000030          15         2           close
+    3.14    0.000021          21         1           read
+    3.14    0.000021          21         1           arch_prctl
+    2.84    0.000019          19         1           execve
+    1.94    0.000013          13         1           getpid
+    0.00    0.000000           0        10           write
+    0.00    0.000000           0         3           clone
+    0.00    0.000000           0         3           wait4
+    ------ ----------- ----------- --------- --------- ----------------
+    100.00    0.000669                    43         3 total
+
+Nesse log é possível notar que a chamada `wait4` é invocada três vezes, uma para cada chamada do `waitpid` em cada filho encerrado via código em C. Os processos filhos monitorados são 7425, 7426 e 7427.
 
 #### 1.2.3	execve
-TODO: Fazer descrição similar a da seção fork
+A função `execve()` serve para acionar a execução de um programa descrito no argumento `filename`. A entrada desse argumento pode ser tanto um arquivo binário executável quanto um script. Quando obtém sucesso na abertura do arquivo, o `execve()` não possui retorno, enquanto em caso de erro retorna -1.
+
+O código implementado para utilização do `execve()` nesse projeto pode ser acessado em https://github.com/rogerscristo/SSC5723-gpso3/blob/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Processos/execve/execve.c. Para realizar a análise utilizando o `strace` o seguinte comando foi executado:
+
+    strace -o strace_execve_dump -C ./execve.o
+
+O retorno do strace para o código desenvolvido é apresentado abaixo:
+    execve("./execve.o", ["./execve.o"], 0x7ffeb254df38 /* 78 vars */) = 0
+    brk(NULL)                               = 0x558e6700f000
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+    fstat(3, {st_mode=S_IFREG|0644, st_size=95204, ...}) = 0
+    mmap(NULL, 95204, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fa9aeea6000
+    close(3)                                = 0
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+    read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\34\2\0\0\0\0\0"..., 832) = 832
+    fstat(3, {st_mode=S_IFREG|0755, st_size=2030544, ...}) = 0
+    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fa9aeea4000
+    mmap(NULL, 4131552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fa9ae8a6000
+    mprotect(0x7fa9aea8d000, 2097152, PROT_NONE) = 0
+    mmap(0x7fa9aec8d000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e7000) = 0x7fa9aec8d000
+    mmap(0x7fa9aec93000, 15072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fa9aec93000
+    close(3)                                = 0
+    arch_prctl(ARCH_SET_FS, 0x7fa9aeea54c0) = 0
+    mprotect(0x7fa9aec8d000, 16384, PROT_READ) = 0
+    mprotect(0x558e6694d000, 4096, PROT_READ) = 0
+    mprotect(0x7fa9aeebe000, 4096, PROT_READ) = 0
+    munmap(0x7fa9aeea6000, 95204)           = 0
+    execve("/bin/echo", ["/bin/echo", "Esse \303\251 um echo executado com ex"...], 0x7ffc41135f78 /* 0 vars */) = 0
+    brk(NULL)                               = 0x556999b82000
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+    fstat(3, {st_mode=S_IFREG|0644, st_size=95204, ...}) = 0
+    mmap(NULL, 95204, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fcc2791f000
+    close(3)                                = 0
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+    read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\34\2\0\0\0\0\0"..., 832) = 832
+    fstat(3, {st_mode=S_IFREG|0755, st_size=2030544, ...}) = 0
+    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fcc2791d000
+    mmap(NULL, 4131552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fcc2731f000
+    mprotect(0x7fcc27506000, 2097152, PROT_NONE) = 0
+    mmap(0x7fcc27706000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e7000) = 0x7fcc27706000
+    mmap(0x7fcc2770c000, 15072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fcc2770c000
+    close(3)                                = 0
+    arch_prctl(ARCH_SET_FS, 0x7fcc2791e540) = 0
+    mprotect(0x7fcc27706000, 16384, PROT_READ) = 0
+    mprotect(0x5569997d2000, 4096, PROT_READ) = 0
+    mprotect(0x7fcc27937000, 4096, PROT_READ) = 0
+    munmap(0x7fcc2791f000, 95204)           = 0
+    brk(NULL)                               = 0x556999b82000
+    brk(0x556999ba3000)                     = 0x556999ba3000
+    fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 0), ...}) = 0
+    write(1, "Esse \303\251 um echo executado com ex"..., 37) = 37
+    close(1)                                = 0
+    close(2)                                = 0
+    exit_group(0)                           = ?
+    +++ exited with 0 +++
+    % time     seconds  usecs/call     calls    errors syscall
+    ------ ----------- ----------- --------- --------- ----------------
+    20.17    0.000119          15         8           mprotect
+    20.00    0.000118          12        10           mmap
+    13.56    0.000080          40         2           munmap
+    13.05    0.000077          13         6         6 access
+    8.64    0.000051          13         4           openat
+    6.10    0.000036           6         6           close
+    4.58    0.000027          14         2           execve
+    4.07    0.000024           6         4           brk
+    3.56    0.000021           4         5           fstat
+    3.05    0.000018          18         1           write
+    2.03    0.000012           6         2           read
+    1.19    0.000007           4         2           arch_prctl
+    ------ ----------- ----------- --------- --------- ----------------
+    100.00    0.000590                    52         6 total
+
+A execução do `strace` para o código proposto revela duas chamadas do `execve()`. A primeira referece a execução do binário gerado pela compilação do código `execve.c`. As chamadas de sistema na sequência realizam as alocações em disco e memória necessárias. A segunda chamada do `execve` referece a execução da função `echo` implementada no código em C.
 
 ### 1.3 Gerenciamento de arquivos
 TODO: Fazer descrição similar a da seção Gerenciamento de processos
