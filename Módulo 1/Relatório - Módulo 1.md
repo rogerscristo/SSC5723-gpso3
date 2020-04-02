@@ -381,3 +381,43 @@ TODO: Fazer descrição nos moldes das anteriores.
 ## 2. Processos CPU-bound e I-O bound  
 
 Cada grupo deverá desenvolver ao menos 2 programas que exibam o comportamento esperado para processos CPU-bound e I-O bound, tal como foi informado em sala de aula. Pode-se utilizar os programas desenvolvidos na etapa anterior, desde que eles atendam ao requisito especificado. 
+
+2.1 Função de Ackermann - CPU-bound
+
+A função de Ackermann é um método computável e não recursivo primitivamente. Seu crescimento é mais rápido se comparado a uma função exponencial. Podemos defini-la como:
+
+![Ackermann](https://mathworld.wolfram.com/images/equations/AckermannFunction/NumberedEquation1.gif)
+
+A implementação recursiva da função de Ackermann pode ser encontrada em https://github.com/rogerscristo/SSC5723-gpso3/blob/master/M%C3%B3dulo%201/Processos%20CPU%20e%20IO%20bound/CPU-bound/ackermann.c.
+
+Par demonstrar a sua ligação do seu processo com o uso de CPU o método `time` do linux foi utilizado, seguindo os seguintes parâmetros:
+
+    sudo time -v -o ackermann_time.txt ./ackermann.o 
+
+Onde a flag `-v` é utilizada para obter a saída completa do método, equanto `-o` indica o arquivo de saída para salvamento dos resultados. O resultado obtido é demonstrado abaixo:
+
+    Command being timed: "./ackermann.o"
+	User time (seconds): 8.23
+	System time (seconds): 0.00
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:08.23
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 3528
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 570
+	Voluntary context switches: 1
+	Involuntary context switches: 54
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+O processo executado não executa paralelamente, portanto percebe-se um uso massivo do núcleo (99%). Outro ponto interessante é que não são geradas I/O de entrada ou saída, que podem ser observadas nos resultados de `File system inputs` e `File system outputs`. Logo, se conclui que o processo implementado é intereiramente CPU-bound.
