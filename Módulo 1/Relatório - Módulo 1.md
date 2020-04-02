@@ -360,22 +360,303 @@ struct stat {
 ```
 
 #### 1.3.2	lseek
-TODO: Fazer descrição nos moldes das anteriores.
+A função `lseek()` serve para reposicionar o ponteiro de posição de um arquivo. O `lseek()` recebe três parâmetros: o diretório do arquivo e o nome do arquivo, para onde o ponteiro vai ser deslocado e o local de início para esse deslocamento. Se o reposisionamento do ponteiro for executado com sucesso é retornado o deslocamento resultante. Se houver erro ao mover o ponteiro é retornado o -1.
+
+O código implementado para utilização do `lseek()` nesse projeto pode ser acessado em https://github.com/rogerscristo/SSC5723-gpso3/blob/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Arquivos/lseek/lseek.c. Nesse código `lseek()` é utilizado para retornar o ponteiro do arquivo para o início. Foi necessário passar a referência do arquivo que se deseja mudar, para tal, foi necessário o uso da função `open()`.
+
+Para realizar a análise utilizando o `strace` o seguinte comando foi executado:
+
+    strace -o strace_lseek_dump -C ./lseek.o
+
+O retorno do strace para o código desenvolvido é apresentado abaixo:
+
+    execve("./lseek.o", ["./lseek.o"], 0x7ffecbb491d8 /* 67 vars */) = 0
+    brk(NULL)                               = 0x556c97eee000
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+    fstat(3, {st_mode=S_IFREG|0644, st_size=79616, ...}) = 0
+    mmap(NULL, 79616, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fa74e1ce000
+    close(3)                                = 0
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+    read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\34\2\0\0\0\0\0"..., 832) = 832
+    fstat(3, {st_mode=S_IFREG|0755, st_size=2030544, ...}) = 0
+    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fa74e1cc000
+    mmap(NULL, 4131552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fa74dbca000
+    mprotect(0x7fa74ddb1000, 2097152, PROT_NONE) = 0
+    mmap(0x7fa74dfb1000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e7000) = 0x7fa74dfb1000
+    mmap(0x7fa74dfb7000, 15072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fa74dfb7000
+    close(3)                                = 0
+    arch_prctl(ARCH_SET_FS, 0x7fa74e1cd4c0) = 0
+    mprotect(0x7fa74dfb1000, 16384, PROT_READ) = 0
+    mprotect(0x556c96a03000, 4096, PROT_READ) = 0
+    mprotect(0x7fa74e1e2000, 4096, PROT_READ) = 0
+    munmap(0x7fa74e1ce000, 79616)           = 0
+    openat(AT_FDCWD, "./arquivo.txt", O_RDWR|O_CREAT|O_APPEND, 0770) = 3
+    lseek(3, 0, SEEK_SET)                   = 0
+    close(3)                                = 0
+    exit_group(0)                           = ?
+    +++ exited with 0 +++
+    % time     seconds  usecs/call     calls    errors syscall
+    ------ ----------- ----------- --------- --------- ----------------
+    48.51    0.000049          10         5           mmap
+    23.76    0.000024           6         4           mprotect
+    12.87    0.000013          13         1           munmap
+    6.93    0.000007           2         3           openat
+    3.96    0.000004           1         3           close
+    1.98    0.000002           2         1           lseek
+    1.98    0.000002           2         1           arch_prctl
+    0.00    0.000000           0         1           read
+    0.00    0.000000           0         2           fstat
+    0.00    0.000000           0         1           brk
+    0.00    0.000000           0         3         3 access
+    0.00    0.000000           0         1           execve
+    ------ ----------- ----------- --------- --------- ----------------
+    100.00    0.000101                    26         3 total
+
+Para o funcionamento correto da chamada `lseek()` é necessário realizar uma chamada de abertura de arquivo, isso é, uma chamada `open()`. O `open()` realiza três chamadas a chamada de sistema `access()`, onde as três geraram erro ao não encontrar o arquivo nos arquivos temporários da máquina. Após, foi necessário realizar uma chamada de desvio para acesso a memória com o `mmap()`, esse método é responsável por mapear arquivos na memória do computador. Como o arquivo não existia, ele foi mapeado na memória e gerado na máquina. Foi necessário outras chamadas de `mmap()` para atribuir o tipo de leitura e escrita permitido no arquivo. Por fim, é executado o comando do `lseek()` que é responsável pelo reposicionamento do ponteiro de acesso no arquivo. As chamadas de função `mmap()` foram as que mais precisaram de tempo de execução, por causa do mapeamento do arquivo e das interrupções necessárias para a alocação de memória. A chamada `lseek()` necessitou de apenas 1.98% do tempo de executação do processo para realizar sua chamada.
 
 #### 1.3.3	open
-TODO: Fazer descrição nos moldes das anteriores.
+A função `open()` serve para abrir uma arquivo do computador. O `open()` pode receber três parâmetros: o diretório para arquivo, como o arquivo vai ser aberto e quais as permissões serão adicionadas ao arquivo. Se o arquivo for aberto corretamente é retornado um valor não negativo. Se houver erro ao abrir o arquivo é retornado o -1.
+
+O código implementado para utilização do `open()` nesse projeto pode ser acessado em https://github.com/rogerscristo/SSC5723-gpso3/blob/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Arquivos/open/open.c. Nesse código `open()` é utilizado para abrir ou criar um arquivo e lhe atribuir a permissão de acesso 0775.
+
+Para realizar a análise utilizando o `strace` o seguinte comando foi executado:
+
+    strace -o strace_open_dump -C ./open.o
+
+O retorno do strace para o código desenvolvido é apresentado abaixo:
+
+    execve("./open.o", ["./open.o"], 0x7fff6fa42758 /* 67 vars */) = 0
+    brk(NULL)                               = 0x55778328e000
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+    fstat(3, {st_mode=S_IFREG|0644, st_size=79616, ...}) = 0
+    mmap(NULL, 79616, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f1c112d2000
+    close(3)                                = 0
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+    read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\34\2\0\0\0\0\0"..., 832) = 832
+    fstat(3, {st_mode=S_IFREG|0755, st_size=2030544, ...}) = 0
+    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f1c112d0000
+    mmap(NULL, 4131552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f1c10cce000
+    mprotect(0x7f1c10eb5000, 2097152, PROT_NONE) = 0
+    mmap(0x7f1c110b5000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e7000) = 0x7f1c110b5000
+    mmap(0x7f1c110bb000, 15072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f1c110bb000
+    close(3)                                = 0
+    arch_prctl(ARCH_SET_FS, 0x7f1c112d14c0) = 0
+    mprotect(0x7f1c110b5000, 16384, PROT_READ) = 0
+    mprotect(0x557781c35000, 4096, PROT_READ) = 0
+    mprotect(0x7f1c112e6000, 4096, PROT_READ) = 0
+    munmap(0x7f1c112d2000, 79616)           = 0
+    openat(AT_FDCWD, "./arquivo.txt", O_RDWR|O_CREAT|O_APPEND, 0770) = 3
+    exit_group(0)                           = ?
+    +++ exited with 0 +++
+    % time     seconds  usecs/call     calls    errors syscall
+    ------ ----------- ----------- --------- --------- ----------------
+    20.69    0.000018           4         5           mmap
+    20.69    0.000018           5         4           mprotect
+    19.54    0.000017           6         3           openat
+    16.09    0.000014          14         1           munmap
+    11.49    0.000010           3         3         3 access
+    3.45    0.000003           2         2           fstat
+    2.30    0.000002           2         1           read
+    2.30    0.000002           2         1           execve
+    1.15    0.000001           1         2           close
+    1.15    0.000001           1         1           brk
+    1.15    0.000001           1         1           arch_prctl
+    ------ ----------- ----------- --------- --------- ----------------
+    100.00    0.000087                    24         3 total
+
+O `open()` realiza três chamadas a chamada de sistema `access()`, onde as três geraram erro ao não encontrar o arquivo nos arquivos temporários da máquina. Após, foi necessário realizar uma chamada de desvio para acesso a memória com o `mmap()`, esse método é responsável por mapear arquivos na memória do computador. Como o arquivo não existia, ele foi mapeado na memória e gerado na máquina. Foi necessário outras chamadas de `mmap()` para atribuir o tipo de leitura e escrita permitido no arquivo.
 
 ### 1.4 Gerenciamento de memória
-TODO: Fazer descrição similar a da seção Gerenciamento de processos
+As três chamadas de sistema implementadas para demonstrar o gerenciamento de memória foram: `getrlimit`, `setrlimit` e `sbrk`. Para acessar o código de cada uma das três entre em https://github.com/rogerscristo/SSC5723-gpso3/tree/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Mem%C3%B3ria.
 
 #### 1.4.1	getrlimit
-TODO: Fazer descrição nos moldes das anteriores.
+A função `getrlimit()` é utilizado para recuperar o limite de recursos da máquina. O `getrlimit()` recebe dois parâmentros: qual o recurso que será obtido, e um ponteiro do tipo `struct rlimit` que armazenará os valores de retorno. Se os parâmentros forem retornados corretamente é retornado o valor 0. Se houver erro ao abrir o arquivo é retornado o -1.
+
+O código implementado para utilização do `getrlimit()` nesse projeto pode ser acessado em https://github.com/rogerscristo/SSC5723-gpso3/blob/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Mem%C3%B3ria/getrlimit/getrlimit.c. Nesse código `getrlimit()` é utilizado recuperar os status do total de  mémoria disonível e para recupera o número máximo de segmentos de processo.
+
+Para realizar a análise utilizando o `strace` o seguinte comando foi executado:
+
+    strace -o strace_getrlimit_dump -C ./getrlimit.o
+
+O retorno do strace para o código desenvolvido é apresentado abaixo:
+
+    execve("./getrlimit.o", ["./getrlimit.o"], 0x7ffe2bd6cba8 /* 67 vars */) = 0
+    brk(NULL)                               = 0x555878b3f000
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+    fstat(3, {st_mode=S_IFREG|0644, st_size=79616, ...}) = 0
+    mmap(NULL, 79616, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f3a29e30000
+    close(3)                                = 0
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+    read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\34\2\0\0\0\0\0"..., 832) = 832
+    fstat(3, {st_mode=S_IFREG|0755, st_size=2030544, ...}) = 0
+    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f3a29e2e000
+    mmap(NULL, 4131552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f3a2982c000
+    mprotect(0x7f3a29a13000, 2097152, PROT_NONE) = 0
+    mmap(0x7f3a29c13000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e7000) = 0x7f3a29c13000
+    mmap(0x7f3a29c19000, 15072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f3a29c19000
+    close(3)                                = 0
+    arch_prctl(ARCH_SET_FS, 0x7f3a29e2f4c0) = 0
+    mprotect(0x7f3a29c13000, 16384, PROT_READ) = 0
+    mprotect(0x555876d00000, 4096, PROT_READ) = 0
+    mprotect(0x7f3a29e44000, 4096, PROT_READ) = 0
+    munmap(0x7f3a29e30000, 79616)           = 0
+    brk(NULL)                               = 0x555878b3f000
+    brk(0x555878b60000)                     = 0x555878b60000
+    prlimit64(0, RLIMIT_MEMLOCK, NULL, {rlim_cur=16384*1024, rlim_max=16384*1024}) = 0
+    fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 0), ...}) = 0
+    write(1, "Limite de memoria disponivel: 16"..., 39) = 39
+    prlimit64(0, RLIMIT_DATA, NULL, {rlim_cur=RLIM64_INFINITY, rlim_max=RLIM64_INFINITY}) = 0
+    write(1, "Tamanho m\303\241ximo segmentos proces"..., 39) = 39
+    exit_group(0)                           = ?
+    +++ exited with 0 +++
+    % time     seconds  usecs/call     calls    errors syscall
+    ------ ----------- ----------- --------- --------- ----------------
+    56.61    0.000107          27         4           mprotect
+    12.70    0.000024          24         1           munmap
+    11.64    0.000022           4         5           mmap
+    7.94    0.000015           8         2           write
+    3.70    0.000007           2         3           fstat
+    3.17    0.000006           2         3           brk
+    1.59    0.000003           2         2           close
+    1.59    0.000003           2         2           prlimit64
+    1.06    0.000002           2         1           arch_prctl
+    0.00    0.000000           0         1           read
+    0.00    0.000000           0         3         3 access
+    0.00    0.000000           0         1           execve
+    0.00    0.000000           0         2           openat
+    ------ ----------- ----------- --------- --------- ----------------
+    100.00    0.000189                    30         3 total
+
+A chamada `mprotect` realiza a proteção em uma região de memória, 56.61% do tempo de uma chamada `getrlimit` é utilizado nessa operação. O `nummap` realiza o mapeamento de arquivos ou dispositivos na memória, ele é responsável por 12.70% do total de tempo da requisição. O `fstat` recupera o status de um arquivo. A chamada `brk` altera o tamanho do segmento de memória do processo. A chamada de sistema `prlimit64` é a responsável por realizar o retorno das informações da memória. Ela demorou apenas 1.06% do tempo total de chamadas ao sistema.
 
 #### 1.4.2	setrlimit
-TODO: Fazer descrição nos moldes das anteriores.
+A função `setrlimit()` é utilizado para alterar o limite de recursos da máquina. O `setrlimit()` recebe dois parâmentros: qual o recurso que será alterado, e um ponteiro do tipo `struct rlimit` que armazenará os novos valores. Se os parâmentros forem retornados corretamente é retornado o valor 0. Se houver erro ao abrir o arquivo é retornado o -1.
+
+O código implementado para utilização do `setrlimit()` nesse projeto pode ser acessado em https://github.com/rogerscristo/SSC5723-gpso3/blob/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Mem%C3%B3ria/setrlimit/setrlimit.c. Nesse código `setrlimit()` é utilizado para reduzir o limite de memória RAM disponível em 10 bytes sendo utilizado o `getrlimit()` para recuperar o novo valor máximo e apresentá-lo na tela.
+
+Para realizar a análise utilizando o `strace` o seguinte comando foi executado:
+
+    strace -o strace_getrlimit_dump -C ./getrlimit.o
+
+O retorno do strace para o código desenvolvido é apresentado abaixo:
+
+    execve("./setrlimit.o", ["./setrlimit.o"], 0x7ffebcdfb3c8 /* 67 vars */) = 0
+    brk(NULL)                               = 0x56429a8f5000
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+    fstat(3, {st_mode=S_IFREG|0644, st_size=79616, ...}) = 0
+    mmap(NULL, 79616, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fb838bab000
+    close(3)                                = 0
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+    read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\34\2\0\0\0\0\0"..., 832) = 832
+    fstat(3, {st_mode=S_IFREG|0755, st_size=2030544, ...}) = 0
+    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fb838ba9000
+    mmap(NULL, 4131552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fb8385a7000
+    mprotect(0x7fb83878e000, 2097152, PROT_NONE) = 0
+    mmap(0x7fb83898e000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e7000) = 0x7fb83898e000
+    mmap(0x7fb838994000, 15072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fb838994000
+    close(3)                                = 0
+    arch_prctl(ARCH_SET_FS, 0x7fb838baa4c0) = 0
+    mprotect(0x7fb83898e000, 16384, PROT_READ) = 0
+    mprotect(0x5642992b4000, 4096, PROT_READ) = 0
+    mprotect(0x7fb838bbf000, 4096, PROT_READ) = 0
+    munmap(0x7fb838bab000, 79616)           = 0
+    brk(NULL)                               = 0x56429a8f5000
+    brk(0x56429a916000)                     = 0x56429a916000
+    prlimit64(0, RLIMIT_MEMLOCK, NULL, {rlim_cur=16384*1024, rlim_max=16384*1024}) = 0
+    fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 0), ...}) = 0
+    write(1, "Limite de memoria disponivel: 16"..., 39) = 39
+    prlimit64(0, RLIMIT_MEMLOCK, {rlim_cur=16777206, rlim_max=16777206}, NULL) = 0
+    prlimit64(0, RLIMIT_MEMLOCK, NULL, {rlim_cur=16777206, rlim_max=16777206}) = 0
+    write(1, "Novo limite de memoria disponive"..., 44) = 44
+    exit_group(0)                           = ?
+    +++ exited with 0 +++
+    % time     seconds  usecs/call     calls    errors syscall
+    ------ ----------- ----------- --------- --------- ----------------
+    44.57    0.000119          60         2           openat
+    18.35    0.000049          12         4           mprotect
+    11.99    0.000032           6         5           mmap
+    6.37    0.000017           6         3         3 access
+    5.62    0.000015          15         1           munmap
+    4.12    0.000011           6         2           write
+    4.12    0.000011           4         3           fstat
+    1.50    0.000004           1         3           brk
+    0.75    0.000002           2         1           read
+    0.75    0.000002           1         2           close
+    0.75    0.000002           2         1           execve
+    0.75    0.000002           1         3           prlimit64
+    0.37    0.000001           1         1           arch_prctl
+    ------ ----------- ----------- --------- --------- ----------------
+    100.00    0.000267                    31         3 total
+
+A chamada de sistema `prlimit64` é a responsável por realizar a alteração na memória disponível enquanto o processo está sendo executado. Ela demorou apenas 0.77% do tempo total das chamadas ao sistema.
 
 #### 1.4.3	sbrk
-TODO: Fazer descrição nos moldes das anteriores.
+A função `sbrk()` é utilizado para alterar o espaço alocado para o processo que invoca essa chamada. Ele adiciona `n` bytes para o processo. O `sbrk()` recebe um parâmentro: o espaço de memória que deve ser adicionado. Se os parâmentros forem retornados corretamente é retornado um valor de quebra anterior. Se houver erro ao abrir o arquivo é retornado o -1.
+
+O código implementado para utilização do `sbrk()` nesse projeto pode ser acessado em https://github.com/rogerscristo/SSC5723-gpso3/blob/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Mem%C3%B3ria/sbrk/sbrk.c. Nesse código `sbrk()` é utilizado para adicionar 100 vezes o tamanho de `long` ao espaço de memória do processo.
+
+Para realizar a análise utilizando o `strace` o seguinte comando foi executado:
+
+    strace -o strace_sbrk_dump -C ./sbrk.o
+
+O retorno do strace para o código desenvolvido é apresentado abaixo:
+
+    execve("./sbrk.o", ["./sbrk.o"], 0x7ffc134263f8 /* 62 vars */) = 0
+    brk(NULL)                               = 0x56078e203000
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+    fstat(3, {st_mode=S_IFREG|0644, st_size=79616, ...}) = 0
+    mmap(NULL, 79616, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f3ce1eef000
+    close(3)                                = 0
+    access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+    openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+    read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\260\34\2\0\0\0\0\0"..., 832) = 832
+    fstat(3, {st_mode=S_IFREG|0755, st_size=2030544, ...}) = 0
+    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f3ce1eed000
+    mmap(NULL, 4131552, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f3ce18eb000
+    mprotect(0x7f3ce1ad2000, 2097152, PROT_NONE) = 0
+    mmap(0x7f3ce1cd2000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e7000) = 0x7f3ce1cd2000
+    mmap(0x7f3ce1cd8000, 15072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f3ce1cd8000
+    close(3)                                = 0
+    arch_prctl(ARCH_SET_FS, 0x7f3ce1eee4c0) = 0
+    mprotect(0x7f3ce1cd2000, 16384, PROT_READ) = 0
+    mprotect(0x56078dc6d000, 4096, PROT_READ) = 0
+    mprotect(0x7f3ce1f03000, 4096, PROT_READ) = 0
+    munmap(0x7f3ce1eef000, 79616)           = 0
+    brk(NULL)                               = 0x56078e203000
+    brk(0x56078e203320)                     = 0x56078e203320
+    exit_group(0)                           = ?
+    +++ exited with 0 +++
+    % time     seconds  usecs/call     calls    errors syscall
+    ------ ----------- ----------- --------- --------- ----------------
+    24.32    0.000027           5         5           mmap
+    21.62    0.000024           6         4           mprotect
+    12.61    0.000014          14         1           munmap
+    12.61    0.000014           5         3         3 access
+    11.71    0.000013           7         2           openat
+    4.50    0.000005           3         2           fstat
+    4.50    0.000005           2         3           brk
+    3.60    0.000004           2         2           close
+    2.70    0.000003           3         1           read
+    1.80    0.000002           2         1           arch_prctl
+    0.00    0.000000           0         1           execve
+    ------ ----------- ----------- --------- --------- ----------------
+    100.00    0.000111                    25         3 total
+
+A chamada `sbrk()` é a chamada interna para o `malloc()` em C. Ela é responsável por alocar memória para um processo. A chamada de sistema demorou um total de 4.50% do tempo de execução de chamadas ao sistema no código implementado.
 
 -------
 ## 2. Processos CPU-bound e I/O bound  
