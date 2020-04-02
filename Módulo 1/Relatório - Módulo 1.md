@@ -378,11 +378,11 @@ TODO: Fazer descrição nos moldes das anteriores.
 TODO: Fazer descrição nos moldes das anteriores.
 
 -------
-## 2. Processos CPU-bound e I-O bound  
+## 2. Processos CPU-bound e I/O bound  
 
-Cada grupo deverá desenvolver ao menos 2 programas que exibam o comportamento esperado para processos CPU-bound e I-O bound, tal como foi informado em sala de aula. Pode-se utilizar os programas desenvolvidos na etapa anterior, desde que eles atendam ao requisito especificado. 
+Cada grupo deverá desenvolver ao menos 2 programas que exibam o comportamento esperado para processos CPU-bound e I/O-bound, tal como foi informado em sala de aula. Pode-se utilizar os programas desenvolvidos na etapa anterior, desde que eles atendam ao requisito especificado. 
 
-2.1 Função de Ackermann - CPU-bound
+### 2.1 Função de Ackermann - CPU-bound
 
 A função de Ackermann é um método computável e não recursivo primitivamente. Seu crescimento é mais rápido se comparado a uma função exponencial. Podemos defini-la como:
 
@@ -390,7 +390,7 @@ A função de Ackermann é um método computável e não recursivo primitivament
 
 A implementação recursiva da função de Ackermann pode ser encontrada em https://github.com/rogerscristo/SSC5723-gpso3/blob/master/M%C3%B3dulo%201/Processos%20CPU%20e%20IO%20bound/CPU-bound/ackermann.c.
 
-Par demonstrar a sua ligação do seu processo com o uso de CPU o método `time` do linux foi utilizado, seguindo os seguintes parâmetros:
+Para demonstrar a sua ligação do seu processo com o uso de CPU o método `time` do linux foi utilizado, seguindo os seguintes parâmetros:
 
     sudo time -v -o ackermann_time.txt ./ackermann.o 
 
@@ -421,3 +421,39 @@ Onde a flag `-v` é utilizada para obter a saída completa do método, equanto `
 	Exit status: 0
 
 O processo executado não executa paralelamente, portanto percebe-se um uso massivo do núcleo (99%). Outro ponto interessante é que não são geradas I/O de entrada ou saída, que podem ser observadas nos resultados de `File system inputs` e `File system outputs`. Logo, se conclui que o processo implementado é intereiramente CPU-bound.
+
+### 2.2 Função de Ackermann - I/O-bound
+
+O comando `dd` é um acrônimo para _Data Duplicator_. No contexto desse trabalho, este método é utilizado para duplicar o arquivo de entrada `/dev/zero` para o arquivo de saída `/tmp/dd.test`, definindo seu tamanho de leitura e escrita como 4MBytes e o tamanho do bloco para cópia como 1000:
+
+    dd if=/dev/zero of=/tmp/dd.test bs=4M count=1000
+
+O comando `bash` do `dd` foi abstraído dentro do código C, o qual pode ser encontrado em: https://github.com/rogerscristo/SSC5723-gpso3/tree/master/M%C3%B3dulo%201/Processos%20CPU%20e%20IO%20bound/IO-bound.
+
+Analogamente a seção anterior, o comando `time` foi utilizado para extrair estatísticas quanto ao processo: 
+
+    Command being timed: "./dd.o"
+	User time (seconds): 0.00
+	System time (seconds): 4.66
+	Percent of CPU this job got: 21%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:22.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 6380
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1240
+	Voluntary context switches: 22391
+	Involuntary context switches: 91
+	Swaps: 0
+	File system inputs: 24
+	File system outputs: 8192000
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Como esperado, o comando `dd` acaba por gerar mais de 8 milhoes de outputs de arquivos, o que indica um processo I/O-bound. Corroborando com esse hipótese, pouca CPU é utilizada no processo.

@@ -1,9 +1,9 @@
 
 all: 
-	@gcc parallel_find.c -o parallel_find.o
+	@gcc dd.c -o dd.o
 
 time:
-	@sudo time -v -o parallel_find_time.txt ./parallel_find.o 
+	@sudo time -v -o dd_time.txt ./dd.o 
 
 clean:
 	@rm *.o
