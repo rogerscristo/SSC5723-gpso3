@@ -267,7 +267,7 @@ A execução do `strace` para o código proposto revela duas chamadas do `execve
 As três chamadas de sistema implementadas para demonstrar o gerenciamento de arquivos foram: `stat`, `lseek` e `open`. Para acessar o código de cada uma das três entre em https://github.com/rogerscristo/SSC5723-gpso3/tree/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Arquivos.
 
 #### 1.3.1	stat
-A função `execve()` serve para acionar a execução de um programa descrito no argumento `filename`. A entrada desse argumento pode ser tanto um arquivo binário executável quanto um script. Quando obtém sucesso na abertura do arquivo, o `execve()` não possui retorno, enquanto em caso de erro retorna -1.
+O método `stat()` retorna estatísticas de um dado arquivo de entrada. 
 
 O código implementado para utilização do `stat()` nesse projeto pode ser acessado em https://github.com/rogerscristo/SSC5723-gpso3/blob/master/M%C3%B3dulo%201/Chamadas%20de%20Sistema/Gerenciamento%20de%20Arquivos/stat/stat.c. Neste código, a função `stat()` é invocada para retornar algumas estatísticas a repeito do próprio arquivo `stat.c` (Permissões do arquivo, id do despositivo no qual o arquivo `stat.c` reside, tamanho do arquivo e horário da última alteração no arquivo).
 
@@ -703,7 +703,7 @@ Onde a flag `-v` é utilizada para obter a saída completa do método, equanto `
 
 O processo executado não executa paralelamente, portanto percebe-se um uso massivo do núcleo (99%). Outro ponto interessante é que não são geradas I/O de entrada ou saída, que podem ser observadas nos resultados de `File system inputs` e `File system outputs`. Logo, se conclui que o processo implementado é intereiramente CPU-bound.
 
-### 2.2 Função de Ackermann - I/O-bound
+### 2.2 Data Duplicator - I/O-bound
 
 O comando `dd` é um acrônimo para _Data Duplicator_. No contexto desse trabalho, este método é utilizado para duplicar o arquivo de entrada `/dev/zero` para o arquivo de saída `/tmp/dd.test`, definindo seu tamanho de leitura e escrita como 4MBytes e o tamanho do bloco para cópia como 1000:
 
