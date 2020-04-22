@@ -29,6 +29,7 @@ unsigned int num_elem = 0;
  */
 void *produtor(void *ponteiro) {
     printf("Inicializando rotina de produção...\n");
+    printf("--- Ocupação atual do buffer: %d/%d\n", num_elem, MAX);
 
     for(int i = 1; i <= MAX; i++) {
         pthread_mutex_lock(&mutex);
@@ -38,10 +39,9 @@ void *produtor(void *ponteiro) {
         }
 
         buffer[insert_pos] = i;
-        printf("Produtor: inseriu %d no buffer\n", i);
-
         insert_pos = (insert_pos + 1) % MAX; // Reseta insert_pos para 0 quando insert_pos == MAX
         num_elem++;
+        printf("--- Produtor: inseriu %d no buffer\tBuffer %d/%d\n", i, num_elem, MAX);
 
         pthread_cond_signal(&full);
         pthread_mutex_unlock(&mutex);
@@ -56,6 +56,7 @@ void *produtor(void *ponteiro) {
  */
 void *consumidor(void *ponteiro) {
     printf("Inicializando rotina de consumo...\n");
+    printf("--- Ocupação atual do buffer: %d/%d\n", num_elem, MAX);
 
     for(int i = 1; i <= MAX; i++) {
         pthread_mutex_lock(&mutex);
@@ -65,10 +66,9 @@ void *consumidor(void *ponteiro) {
         }
 
         int payload = buffer[remove_pos];
-        printf("Consumidor: removeu %d da posição %d do buffer\n", buffer[remove_pos], remove_pos);
-
         remove_pos = (remove_pos + 1) % MAX;
         num_elem--;
+        printf("--- Consumidor: removeu %d da posição %d do buffer\tBuffer %d/%d\n", buffer[remove_pos], remove_pos, num_elem, MAX);
 
         pthread_cond_signal(&empty);
         pthread_mutex_unlock(&mutex);
@@ -96,6 +96,8 @@ int main(int argc, char **argv) {
     pthread_cond_destroy(&full);
 
     pthread_mutex_destroy(&mutex);
+
+    printf("--- Ocupação atual do buffer: %d/%d\n", num_elem, MAX);
 
     return EXIT_SUCCESS;
 }
