@@ -1,11 +1,23 @@
 #include "VirtMemSim.h"
 using namespace std;
 
+// Vetor de processos
+vector <Process> PROCESS_LIST; // Talvez seja melhor trocar por um map
+
 ////////////////////
 // Métodos globais
 ////////////////////
-tuple_list read_input(string file_path) {
-  return;
+tuple_list read_input(const char * file_path) {
+  tuple_list input;
+  ifstream infile(file_path);
+  string process_id, value_term;
+  char operation;
+
+  while (infile >> process_id >> operation >> value_term) {
+    input.push_back({process_id, operation, value_term});
+  }
+
+  return input;
 }
 
 void log_status(MainMemory main, SecondaryMemory sec) {

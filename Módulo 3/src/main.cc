@@ -11,6 +11,13 @@ using namespace std;
 #define TAM_MAX_IMG_PROC 66
 
 int main(int argc, char** argv) {
+  tuple_list input;
+  input = read_input(argv[1]);
 
+  for(const auto &i : input) {
+    cout << get<0>(i) << " " << get<1>(i) << " " << get<2>(i) << endl;
+  }
+    
+  
   return 0;
 }

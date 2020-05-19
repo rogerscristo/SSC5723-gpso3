@@ -1,21 +1,18 @@
 #ifndef CORE_H
 #define CORE_H
 
+#include<iostream> 
+#include <fstream>
 #include <vector> 
 #include <tuple> 
 #include <string> 
 using namespace std;
 
-typedef vector<tuple<string, char, int>> tuple_list;
+typedef vector <tuple<string, char, string>> tuple_list; // Definição do tipo tuple_list
 
-////////////////////
-// Métodos globais
-////////////////////
-tuple_list read_input(string file_path); // Lê arquivo de entrada
-void log_status(MainMemory main, SecondaryMemory sec); // Imprime os status das memórias principal e secundária
-
-// Vetor de processos
-vector<Process> CURRENT_PROCESS_LIST; // Talvez seja melhor trocar por um map
+////////////////////////////////
+// Estruturas de dados básicas
+////////////////////////////////
 
 struct Process {
   string process_id; // ID do processo. Exemplo P2
@@ -36,10 +33,10 @@ class Memory {
     int size; // Tamanho da memória
 
     // Vetor de processos na memória
-    vector<Process> current_process_list; // TODO: Talvez seja melhor trocar por um map
+    vector <Process> memory_process_list; // TODO: Talvez seja melhor trocar por um map
 
     // Construtor
-    Memory::Memory(int memory_size);
+    Memory(int memory_size);
 
     void read(string proc_id, int address); // Processo lê do endereço
     void write(string proc_id, int address); // Processo escreve no endereço
@@ -68,7 +65,7 @@ class SecondaryMemory: public Memory {
     void clock(); // Algoritmo Clock para paginação
 
   public:
-    vector<Page> pages_list; // Quadro de páginas
+    vector <Page> pages_list; // Quadro de páginas
     string alg_param; // Parâmetro de escolha do algoritmo de paginação ("lru" ou "clock")
 
     // Overwrite de métodos caso seja necessário
@@ -77,6 +74,12 @@ class SecondaryMemory: public Memory {
     void process_in_cpu(string proc_id, int instruction); // Processo indicando instrução de CPU
     void send_to_io(string proc_id, int instruction); // Processo indicando instrução de I/O
 };
+
+////////////////////
+// Métodos globais
+////////////////////
+tuple_list read_input(const char * file_path); // Lê arquivo de entrada
+void log_status(MainMemory main, SecondaryMemory sec); // Imprime os status das memórias principal e secundária
 
 
 #endif
