@@ -20,15 +20,47 @@ tuple_list read_input(const char * file_path) {
   return input;
 }
 
+void print_input(parsed_tuple_list input) {
+  for(const auto &i : input) {
+    cout << get<0>(i) << " " << get<1>(i) << " " << get<2>(i) << endl;
+  }
+}
+
+parsed_tuple_list parse_input(tuple_list input) {
+  parsed_tuple_list parsed_inputs;
+  string parsed_buffer;
+  int parsed_number;
+  unsigned first, last;
+  string start_marker = "(";
+  string stop_marker = ")2";
+
+  for(const auto &i : input) {
+    if (get<1>(i) == 'C') {
+      parsed_number = stoi(get<2>(i));
+      parsed_inputs.push_back({get<0>(i), get<1>(i), parsed_number});
+    } else {
+      first = get<2>(i).find(start_marker);
+      last = get<2>(i).find(stop_marker);
+      parsed_buffer = get<2>(i).substr(first + 1, last - 1);
+      parsed_number = stoi(parsed_buffer);
+      parsed_inputs.push_back({get<0>(i), get<1>(i), parsed_number});
+    } 
+  }
+  
+  return parsed_inputs;
+}
+
 void log_status(MainMemory main, SecondaryMemory sec) {
   return;
 }
+
 
 ///////////////////////////
 // Classe abstrata Memory
 ///////////////////////////
 Memory::Memory(int memory_size) {
   size = memory_size;
+  memory_process_list.resize(size);
 }
 
 void Memory::read(string proc_id, int address) {

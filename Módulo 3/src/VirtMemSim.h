@@ -9,6 +9,7 @@
 using namespace std;
 
 typedef vector <tuple<string, char, string>> tuple_list; // Definição do tipo tuple_list
+typedef vector <tuple<string, char, int>>  parsed_tuple_list; // Definição do tipo parsed_tuple_list
 
 ////////////////////////////////
 // Estruturas de dados básicas
@@ -79,6 +80,8 @@ class SecondaryMemory: public Memory {
 // Métodos globais
 ////////////////////
 tuple_list read_input(const char * file_path); // Lê arquivo de entrada
+void print_input(parsed_tuple_list input); // Imprime na tela os elementos capturados no input
+parsed_tuple_list parse_input(tuple_list input); // Interpreta a entrada e transforma valores ()2 para int
 void log_status(MainMemory main, SecondaryMemory sec); // Imprime os status das memórias principal e secundária
 
 
