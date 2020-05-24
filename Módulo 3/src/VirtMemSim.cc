@@ -3,7 +3,7 @@
 ////////////////////
 // CONFIGURAÇÃO
 ////////////////////
-#define ALGO "LRU" // LRU ou Relogio
+#define ALGO "RU" // LRU ou Relogio
 #define TAM_MEM_FIS 128
 #define TAM_PAG 3
 
@@ -140,23 +140,7 @@ void LRU(int tamPaginas, int qtdQuadros) {
     paginaRequisitada = memoriaVirtual[idProcesso][abs((endMem-1)/tamPaginas)];
 
     tipoAcesso = listaRequisicoes[i][2];
-    switch (tipoAcesso) {
-      case CPU_ACESS:
-        cout << "> Tipo de acesso: Processo executando na CPU" << "\n\n";
-        break;
-
-      case IO_ACESS:
-        cout << "> Tipo de acesso: Processo executando E/S" << "\n\n";
-        break;
-      
-      case R_ACESS:
-        cout << "> Tipo de acesso: leitura" << "\n\n";
-        break;
-
-      case W_ACESS:
-        cout << "> Tipo de acesso: escrita" << "\n\n";
-        break;
-    }
+    ExibirTipoAcesso(tipoAcesso);
 
     if ((tipoAcesso == R_ACESS) || (tipoAcesso == W_ACESS)) {
       cout << "> Processo: " << idProcesso << " requisitando página número: " << abs((endMem-1)/tamPaginas) << endl;
@@ -204,6 +188,101 @@ void LRU(int tamPaginas, int qtdQuadros) {
 }
 
 void Relogio(int tamPaginas, int qtdQuadros) {
+  cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl;
+  cout << ">>>> Algoritmo Relógio acionado" << endl;
+  cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl;
+  cout << ">> Quantidade de quadros: " << qtdQuadros << endl;
+  cout << ">> Tamanho das páginas: " << tamPaginas << endl;
+  int idProcesso; // idProcesso se refere ao id de processamento interno e não ao lido (e.g. P7)
+  int tipoAcesso; // Tipo de acesso a depender do tipo de operação utilizada (i.e., R. W, P ou I)
+  int endMem; // endereço de memória chamado pela requisição
+  int endUsadoRecent; // O endereço que foi utilizado mais recentemente
+  int numPagInicial; // Define o ponteiro do relógio que foi inicialmente carregado.
+  int numPagAtual = 0; // Define o ponteiro atual do relógio.
+  bool paginaEncontrada = false; // booleano de status para a página com o bit referencia igual a 0 foi encontrado.
+  Pagina* paginaRequisitada; // página requisitada durante a operação
+  Pagina* paginaRelogio; // página atual do relógio
+
+  for (int i = 0; i < listaRequisicoes.size(); i++) {
+    paginaEncontrada = false; // Verifica se o bit de referencia é igual a 0.
+    idProcesso = listaRequisicoes[i][0];
+    endMem = listaRequisicoes[i][1];
+    paginaRequisitada = menoriaVirtual[idProcesso][(endMem-1)/tamPaginas];
+    paginaRelogio = memoriaPrincipal[idProcesso][paginaAtual];
+
+    cout << ">> Iteração: " << i << endl;
+    cout << "> ID do processo: " << idProcesso << endl;
+    cout << "> Endereço de memória: " << endMem << endl;
+
+    ExibirTipoAcesso(listaRequisicoes[i][2]);
+
+    if ((tipoAcesso == R_ACESS) || (tipoAcesso == W_ACESS)) {
+
+      if (paginaRequisitada->bitAlocacaoMemoria == 0) {
+        cout << "> Pagina solicitada NÃO está contida na memória principal" << endl;
+
+        if (memoriaPrincipal[idProcesso].size() < qtdQuadros) {
+          cout << "> Há espaço livre na memória" << endl;
+          memoriaPrincipal[idProcesso].push_back(paginaRequisitada);
+          cout << "> Inserindo página requisitada" << endl;
+        } else {
+          cout << "> Não há espaço de memória live, procurando página com o bit de referencia = 0" << endl;
+
+          while (paginaEncontrada == false) {
+            numPagInicial = numPagAtual;
+
+            if (paginaRelogio->bitReferencia == 0) {
+              paginaRelogio->bitAlocacaoMemoria = 0;
+              memoriaPrincipal[idProcesso][numPagAtual] = paginaRequisitada;
+              paginaRequisitada->bitAlocacaoMemoria = 1;
+              qtdSwapsPaginas++;
+              paginaEncontrada = true;
+            }
+
+            if (paginaRelogio->bitReferencia == 1) {
+              paginaRelogio->bitReferencia = 0;
+            }
+            
+            numPagAtual++;
+            if (numPagAtual == memoriaPrincipal[idProcesso].size()) {
+              numPagAtual = 0;
+            }
+
+            paginaRelogio = memoriaPrincipal[idProcesso][numPagAtual];
+            if (numPagAtual == numPagInicial) {
+              paginaRelogio->bitAlocacaoMemoria = 0;
+              memoriaPrincipal[idProcesso][numPagAtual] = paginaRequisitada;
+              paginaRequisitada->bitAlocacaoMemoria = 1;
+              qtdSwapsPaginas++;
+              paginaEncontrada = true;
+            }
+          }
+        }
+      } else {
+        menoriaVirtual[idProcesso][(endMem-1)/tamPaginas] = 1;
+      }
+    }
+  }
+}
+
+void ExibirTipoAcesso(int tipoAcesso) {
+  switch (tipoAcesso) {
+    case CPU_ACESS:
+      cout << "> Tipo de acesso: Processo executando na CPU" << "\n\n";
+      break;
+
+    case IO_ACESS:
+      cout << "> Tipo de acesso: Processo executando E/S" << "\n\n";
+      break;
+    
+    case R_ACESS:
+      cout << "> Tipo de acesso: leitura" << "\n\n";
+      break;
+
+    case W_ACESS:
+      cout << "> Tipo de acesso: escrita" << "\n\n";
+      break;
+  }
 }
 
 int main(int argc, char * const argv[]) {
@@ -248,7 +327,6 @@ int main(int argc, char * const argv[]) {
     // Vetores utilizados como buffer
     vector<int> processos, endMemoria;
 
-
     // Caso a operação seja C, cria o processo
     if (get<1>(i) == 'C') {
       tamMemProcesso = get<2>(i);
@@ -259,7 +337,7 @@ int main(int argc, char * const argv[]) {
       mapaIDsProc.insert(pair<int, int>(idProcesso, contadorProc)); 
       listaDeProcessos.push_back(new Processo(contadorProc, tamMemProcesso, TAM_PAG));
       contadorProc++;
-    } 
+    }
     // Caso a operação seja de outro tipo, inicia as rotinas para tratar as requisições
     else {
       cout << ">> Iniciando processo de tratamento da requisição para o processo ID: " << idProcesso << endl;
