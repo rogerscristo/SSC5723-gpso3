@@ -19,11 +19,26 @@ struct Process {
   string process_id; // ID do processo. Exemplo P2
   int size; // Tamanho do processo
   char current_status; // Status atual do processo (C, R, W, P ou I)
-} ;
+};
 
 struct Page {
-  int size; // Tamanho da página
-  string content; // Conteúdo da página TODO: Talvez deveria ser um vector aqui
+  int numberFrame; // Número do quadro de página
+  bool used; // Bit que define se a página está em uso. (Presente/ausente)
+  bool modified; // Bit que mantem o estado de página modificada
+  bool referenced; // Bit que mantem o estado de página referenciada
+  bool disableCache; // Bit que mantem o estado de cache desativado
+};
+
+///////////////////////////
+// Classe PageTable
+///////////////////////////
+class PageTable {
+  public:
+    int size; // Define o tamanho da tabela de páginas.
+    vector <Page> page_list; // Lista de quadro de páginas
+
+    // Construtor
+    PageTable(int size);
 };
 
 ///////////////////////////
@@ -61,10 +76,6 @@ class MainMemory: public Memory {
 // Classe SecondaryMemory
 ///////////////////////////
 class SecondaryMemory: public Memory {
-  private:
-    void lru(); // Algoritmo LRU para paginação
-    void clock(); // Algoritmo Clock para paginação
-
   public:
     vector <Page> pages_list; // Quadro de páginas
     string alg_param; // Parâmetro de escolha do algoritmo de paginação ("lru" ou "clock")
@@ -74,6 +85,15 @@ class SecondaryMemory: public Memory {
     void write(string proc_id); // Processo escreve no endereço
     void process_in_cpu(string proc_id, int instruction); // Processo indicando instrução de CPU
     void send_to_io(string proc_id, int instruction); // Processo indicando instrução de I/O
+};
+
+///////////////////////////
+// Classe PageReplacement
+///////////////////////////
+class PageReplacement {
+  public:
+    void LRU(); // Algoritmo LRU para paginação
+    void CLOCK(); // Algoritmo Clock para paginação
 };
 
 ////////////////////

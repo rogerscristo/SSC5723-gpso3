@@ -54,7 +54,6 @@ void log_status(MainMemory main, SecondaryMemory sec) {
   return;
 }
 
-
 ///////////////////////////
 // Classe abstrata Memory
 ///////////////////////////
