@@ -1,88 +1,68 @@
-#ifndef CORE_H
-#define CORE_H
+#ifndef VIRTMEMSIM_H
+#define VIRTMEMSIM_H
 
-#include<iostream> 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include <iostream> 
 #include <fstream>
+#include <sstream>
+#include <iomanip>
+
 #include <vector> 
+#include <map>
+#include <deque>
 #include <tuple> 
-#include <string> 
+#include <list>
+#include <queue>
+#include <string>
+
 using namespace std;
 
 typedef vector <tuple<string, char, string>> tuple_list; // Definição do tipo tuple_list
-typedef vector <tuple<string, char, int>>  parsed_tuple_list; // Definição do tipo parsed_tuple_list
+typedef vector <tuple<int, char, int>>  parsed_tuple_list; // Definição do tipo parsed_tuple_list
 
-////////////////////////////////
-// Estruturas de dados básicas
-////////////////////////////////
-
-struct Process {
-  string process_id; // ID do processo. Exemplo P2
-  int size; // Tamanho do processo
-  char current_status; // Status atual do processo (C, R, W, P ou I)
-} ;
-
-struct Page {
-  int size; // Tamanho da página
-  string content; // Conteúdo da página TODO: Talvez deveria ser um vector aqui
-};
-
-///////////////////////////
-// Classe abstrata Memory
-///////////////////////////
-class Memory {
+class Pagina {
+    
   public:
-    int size; // Tamanho da memória
-
-    // Vetor de processos na memória
-    vector <Process> memory_process_list; // TODO: Talvez seja melhor trocar por um map
-
-    // Construtor
-    Memory(int memory_size);
-
-    void read(string proc_id, int address); // Processo lê do endereço
-    void write(string proc_id, int address); // Processo escreve no endereço
-    void process_in_cpu(string proc_id, int instruction); // Processo indicando instrução de CPU
-    void send_to_io(string proc_id, int instruction); // Processo indicando instrução de I/O
+      ostringstream ss;
+      int idProcesso;    // id do processo associado a página
+      int idPagina; // id único da página
+      int bitAlocacaoMemoria;   // 1 se estiver na memória e 0 do contrário
+      int bitReferencia;   // bit de referência usado no Relógio. Inicializado em 0
+      string tempoUltimoAcesso;
+      
+      Pagina (int idDoProcesso, int idDaPagina, int bitAlocacaoMemoria, int bitReferencia) {
+          this->idProcesso = idDoProcesso;
+          this->idPagina = idDaPagina;
+          ss << idPagina;
+          this->bitAlocacaoMemoria = bitAlocacaoMemoria;
+          this->bitReferencia = bitReferencia;
+      }
 };
 
-//////////////////////
-// Classe MainMemory
-//////////////////////
-class MainMemory: public Memory {
-  public:
-    // Overwrite de métodos caso seja necessário
-    void read(string proc_id, int address); // Processo lê do endereço
-    void write(string proc_id, int address); // Processo escreve no endereço
-    void process_in_cpu(string proc_id, int instruction); // Processo indicando instrução de CPU
-    void send_to_io(string proc_id, int instruction); // Processo indicando instrução de I/O
-};
-
-///////////////////////////
-// Classe SecondaryMemory
-///////////////////////////
-class SecondaryMemory: public Memory {
-  private:
-    void lru(); // Algoritmo LRU para paginação
-    void clock(); // Algoritmo Clock para paginação
+class Processo {
 
   public:
-    vector <Page> pages_list; // Quadro de páginas
-    string alg_param; // Parâmetro de escolha do algoritmo de paginação ("lru" ou "clock")
-
-    // Overwrite de métodos caso seja necessário
-    void read(string proc_id); // Processo lê do endereço
-    void write(string proc_id); // Processo escreve no endereço
-    void process_in_cpu(string proc_id, int instruction); // Processo indicando instrução de CPU
-    void send_to_io(string proc_id, int instruction); // Processo indicando instrução de I/O
+      int idProcesso; // id do processo
+      int tamanho;   // tamanho em memória
+      int numPaginas;   // quantidade de páginas
+      vector<Pagina*> tabelaPaginas;    // tabela de páginas
+      
+      Processo (int id, int tam, int tamPaginas) {
+          idProcesso = id;
+          tamanho = tam;
+          numPaginas = tamanho/tamPaginas;
+          // Cria páginas extras caso haja espaço disponível em memória
+          if (tamanho%tamPaginas>0) {
+              numPaginas++;
+          }
+          for (int i = 0; i < numPaginas; i++) {
+              Pagina* novaPagina = new Pagina(idProcesso, i, 0, 0);
+              tabelaPaginas.push_back(novaPagina);
+          }
+      }
 };
-
-////////////////////
-// Métodos globais
-////////////////////
-tuple_list read_input(const char * file_path); // Lê arquivo de entrada
-void print_input(parsed_tuple_list input); // Imprime na tela os elementos capturados no input
-parsed_tuple_list parse_input(tuple_list input); // Interpreta a entrada e transforma valores ()2 para int
-void log_status(MainMemory main, SecondaryMemory sec); // Imprime os status das memórias principal e secundária
-
 
 #endif

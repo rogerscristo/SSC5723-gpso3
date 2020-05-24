@@ -1,118 +1,344 @@
 #include "VirtMemSim.h"
-using namespace std;
-
-// Vetor de processos
-vector <Process> PROCESS_LIST; // Talvez seja melhor trocar por um map
 
 ////////////////////
-// Métodos globais
+// CONFIGURAÇÃO
 ////////////////////
-tuple_list read_input(const char * file_path) {
-  tuple_list input;
-  ifstream infile(file_path);
-  string process_id, value_term;
-  char operation;
+#define ALGO "LRU" // LRU ou Relogio
+#define TAM_MEM_FIS 128
+#define TAM_PAG 3
 
-  while (infile >> process_id >> operation >> value_term) {
-    input.push_back({process_id, operation, value_term});
+// TODO: Parametrizar no código essas constantes
+#define TAM_QUAD_PAG 22
+#define TAM_END_LOG 33
+#define TAM_MAX_MEM_SEC 55
+#define TAM_MAX_IMG_PROC 66
+
+#define R_ACESS 1111
+#define W_ACESS 2222
+#define CPU_ACESS 3333
+#define IO_ACESS 4444
+
+
+
+////////////////////
+// VARIÁVEIS GLOBAIS
+////////////////////
+// Processos carregados a partir do input.txt e criados com a operação C
+// Este vetor contém em cada termo um vetor com o idProcesso e tamanho
+vector<vector<int> > processosEntrada;
+
+// Lista de operações que exigem requisição (R, W, P ou I)
+// Este vetor contém em cada termo um vetor com o idProcesso e valor (endereço)
+vector<vector<int> > listaRequisicoes;
+
+// Lista contendo os processos carregados do input.txt no formato da classe Processo
+vector<Processo*> listaDeProcessos;
+
+// Um deque contendo os elementos da memória principal. O deque foi utilizado dada a necessidade de alguns algoritmos de remover elementos nos dois extremos
+deque<deque<Pagina*> > memoriaPrincipal;
+
+// Representação da memória virtual na simulação
+// É representada por em vetor de vetores de páginas, que por sua vez contém cada processo.
+vector<vector<Pagina*> > memoriaVirtual;
+
+// Mapeamento do ID de entrada no input.txt para o ID de execução
+map<int, int> mapaIDsProc;
+
+// Quantidade de trocas de páginas durante toda a simulação
+int qtdSwapsPaginas = 0;
+
+// Quantidade de faltas de páginas durante toda a simulação
+int qtdFaltaPag = 0;
+
+////////////////////
+// FUNÇÕES DE ENTRADA
+////////////////////
+
+// Método para ler entrada crua
+tuple_list leEntrada(const char * caminhoArquivo) {
+  tuple_list entrada;
+  ifstream arqEntrada(caminhoArquivo);
+  string idProcesso, valor;
+  char operacao;
+
+  while (arqEntrada >> idProcesso >> operacao >> valor) {
+    entrada.push_back({idProcesso, operacao, valor});
   }
 
-  return input;
+  return entrada;
 }
 
-void print_input(parsed_tuple_list input) {
-  for(const auto &i : input) {
+// Impressão da entrada
+void imprimeEntrada(parsed_tuple_list entrada) {
+  for(const auto &i : entrada) {
     cout << get<0>(i) << " " << get<1>(i) << " " << get<2>(i) << endl;
   }
 }
 
-parsed_tuple_list parse_input(tuple_list input) {
-  parsed_tuple_list parsed_inputs;
-  string parsed_buffer;
-  int parsed_number;
-  unsigned first, last;
-  string start_marker = "(";
-  string stop_marker = ")2";
+// Método para interpretar valores de entrada
+parsed_tuple_list parseiaEntrada(tuple_list entrada) {
+  parsed_tuple_list entradaParseada;
+  string parserBuffer;
+  int valor, idProcesso;
+  unsigned primeiroCar, ultimoCar;
+  string marcaInicial = "(";
+  string marcaFinal = ")2";
 
-  for(const auto &i : input) {
+  for(const auto &i : entrada) {
+    parserBuffer = get<0>(i);
+    size_t j = 0;
+    for ( ; j < parserBuffer.length(); j++ ){ if ( isdigit(parserBuffer[j]) ) break; };
+    parserBuffer = parserBuffer.substr(j, parserBuffer.length() - j );
+    idProcesso = atoi(parserBuffer.c_str());
+
     if (get<1>(i) == 'C') {
-      parsed_number = stoi(get<2>(i));
-      parsed_inputs.push_back({get<0>(i), get<1>(i), parsed_number});
+      valor = stoi(get<2>(i));
+      entradaParseada.push_back({idProcesso, get<1>(i), valor});
     } else {
-      first = get<2>(i).find(start_marker);
-      last = get<2>(i).find(stop_marker);
-      parsed_buffer = get<2>(i).substr(first + 1, last - 1);
-      parsed_number = stoi(parsed_buffer);
-      parsed_inputs.push_back({get<0>(i), get<1>(i), parsed_number});
+      primeiroCar = get<2>(i).find(marcaInicial);
+      ultimoCar = get<2>(i).find(marcaFinal);
+      parserBuffer = get<2>(i).substr(primeiroCar + 1, ultimoCar - 1);
+      valor = stoi(parserBuffer);
+      entradaParseada.push_back({idProcesso, get<1>(i), valor});
     } 
   }
   
-  return parsed_inputs;
+  return entradaParseada;
 }
 
-void log_status(MainMemory main, SecondaryMemory sec) {
-  return;
+// O LRU percorre as requisições feitas pelos processos. Com o intuíto de remover sempre o quadro do topo do deque (LRU), 
+// as páginas foram inicializadas com LRU de tempo = 0.
+void LRU(int tamPaginas, int qtdQuadros) {
+  cout << ">>>>>>>>>>>>>>>>>>" << endl;
+  cout << ">>>> LRU acionado" << endl;
+  cout << ">>>>>>>>>>>>>>>>>>" << endl;
+  cout << ">> Quantidade de quadros: " << qtdQuadros << endl;
+  cout << ">> Tamanho das páginas: " << tamPaginas << endl;
+  int idProcesso; // idProcesso se refere ao id de processamento interno e não ao lido (e.g. P7)
+  int tipoAcesso; // Tipo de acesso a depender do tipo de operação utilizada (i.e., R. W, P ou I)
+  int endMem; // endereço de memória chamado pela requisição
+  int endUsadoRecent; // O endereço que foi utilizado mais recentemente
+  Pagina* paginaRequisitada; // página requisitada durante a operação
+  
+  for (int i = 0; i < listaRequisicoes.size(); i++) {
+    cout << ">> Iteração: " << i << endl;
+
+    idProcesso = listaRequisicoes[i][0]; // Recupera o idProcesso
+    cout << "> ID do processo: " << idProcesso << endl;
+
+    endMem = listaRequisicoes[i][1]; // Recupera o endereço de memória a ser usado na requisição
+    cout << "> Endereço de memória: " << endMem << endl;
+
+    // Verifica se a página não pode ser acessada
+    if (abs((endMem-1)/tamPaginas) > memoriaVirtual[idProcesso].size()) {
+      cout << "> Processo: " << idProcesso << " requisitando página número: " << abs((endMem-1)/tamPaginas) << endl;
+      cout << "> Ocorreu uma falta de página" << "\n\n";
+      qtdFaltaPag++;
+      continue;
+    }
+
+    paginaRequisitada = memoriaVirtual[idProcesso][abs((endMem-1)/tamPaginas)];
+
+    tipoAcesso = listaRequisicoes[i][2];
+    switch (tipoAcesso) {
+      case CPU_ACESS:
+        cout << "> Tipo de acesso: Processo executando na CPU" << "\n\n";
+        break;
+
+      case IO_ACESS:
+        cout << "> Tipo de acesso: Processo executando E/S" << "\n\n";
+        break;
+      
+      case R_ACESS:
+        cout << "> Tipo de acesso: leitura" << "\n\n";
+        break;
+
+      case W_ACESS:
+        cout << "> Tipo de acesso: escrita" << "\n\n";
+        break;
+    }
+
+    if ((tipoAcesso == R_ACESS) || (tipoAcesso == W_ACESS)) {
+      cout << "> Processo: " << idProcesso << " requisitando página número: " << abs((endMem-1)/tamPaginas) << endl;
+    
+      // Verfica se a página existe na memória
+      if (paginaRequisitada->bitAlocacaoMemoria == 0) {
+        cout << "> Pagina solicitada NÃO está contida na memória principal" << endl;
+        // Se houver espaço livre carrega a página na memória
+        if (memoriaPrincipal[idProcesso].size() < qtdQuadros) {
+          cout << "> Há espaço livre na memória" << endl;
+          memoriaPrincipal[idProcesso].push_back(paginaRequisitada);
+          cout << "> Inserindo página requisitada" << endl;
+        }
+        // Se não houver espaço livre, faz o swap da página
+        else {
+          cout << "> Não há espaço livre na memória principal" << endl;
+          memoriaPrincipal[idProcesso].front()->bitAlocacaoMemoria = 0; // Define o bit de alocação de memória para zero, uma vez que a página será apagada
+          memoriaPrincipal[idProcesso].pop_front(); // Remove o menos utilizado recentemente
+          memoriaPrincipal[idProcesso].push_back(paginaRequisitada); // Insere a página recementemente usada no final do deck da memória principal
+          cout << "> Ocorreu um swap de página" << endl;
+          qtdSwapsPaginas++;
+        }
+        paginaRequisitada->bitAlocacaoMemoria = 1; // A página foi alocada na memória
+        cout << "> Página alocada com sucesso" << endl;
+      }
+      // Se a página já estiver na memória principal
+      else {
+        cout << "> Página solicitada ESTÁ na memória principal" << endl;
+        for (int j = 0; j < memoriaPrincipal[idProcesso].size(); j++) {
+          if (memoriaPrincipal[idProcesso][j]->idPagina == paginaRequisitada->idPagina) {
+              endUsadoRecent = j;
+              cout << "> Encontrou a página na memória: " << endUsadoRecent << endl;
+              break;
+          }
+        }
+        // Apaga a página requisitada da memória principal
+        memoriaPrincipal[idProcesso].erase(memoriaPrincipal[idProcesso].begin() + endUsadoRecent);
+        cout << "> Página apagada do endereço requisitado" << endl;
+        memoriaPrincipal[idProcesso].push_back(paginaRequisitada); // Insere na memória principal
+        cout << "> Página inserida no endereço requisitado" << endl;
+      }
+      cout << endl;
+    }
+  } 
 }
 
-
-///////////////////////////
-// Classe abstrata Memory
-///////////////////////////
-Memory::Memory(int memory_size) {
-  size = memory_size;
-  memory_process_list.resize(size);
+void Relogio(int tamPaginas, int qtdQuadros) {
 }
 
-void Memory::read(string proc_id, int address) {
-  return;
-}
+int main(int argc, char * const argv[]) {
+  // Verifica se a entrada possui a quantidade correta de argumentos
+  if (argc != 2) {
+    cerr << ">>> ERRO: Quantidade inválida de argumentos" << endl;
+    return 1;
+  }
 
-void Memory::write(string proc_id, int address) {
-  return;
-}
+  // Verifica a configuração do algoritmo a ser utilizado
+  if ((ALGO != "LRU") && (ALGO != "Relogio")) {
+    cerr << ">>> ERRO: Algoritmo inválido: " << ALGO << endl;
+    return 1;
+  }
 
-void Memory::process_in_cpu(string proc_id, int instruction) {
-  return;
-}
+  // Leitura da entrada
+  tuple_list entrada = leEntrada(argv[1]);
+  parsed_tuple_list entradaParseada = parseiaEntrada(entrada);
 
-void Memory::send_to_io(string proc_id, int instruction) {
-  return;
-}
+  cout << ">>>>>>>>>>>>>>>>>>>>>>>" << endl;
+  cout << ">>>> ENTRADA PARSEADA" << endl;
+  cout << ">>>>>>>>>>>>>>>>>>>>>>>" << endl;
 
-//////////////////////
-// Classe MainMemory
-//////////////////////
-void MainMemory::read(string proc_id, int address) {
-  return;
-}
+  imprimeEntrada(entradaParseada);
+  cout << endl;
 
-void MainMemory::write(string proc_id, int address) {
-  return;
-}
+  // Parâmetros de entrada
+  int idProcesso; 
+  int tamMemProcesso;
+  int endProcesso;
 
-void MainMemory::process_in_cpu(string proc_id, int instruction) {
-  return;
-}
+   // Inicialização de variáveis
+  int qtdQuadrosMemPrincipal = TAM_MEM_FIS/TAM_PAG;
+  int qtdQuadros = 0;
+  int contadorProc = 0;
+  int contadorReq = 0;
 
-void MainMemory::send_to_io(string proc_id, int instruction) {
-  return;
-}
+  // Percorre a entrada parseada com o objetivo de popular a memória e chamar o algoritmo de paginação
+  for(const auto &i : entradaParseada) {
+    idProcesso = get<0>(i);
 
-///////////////////////////
-// Classe SecondaryMemory
-///////////////////////////
-void SecondaryMemory::read(string proc_id) {
-  return;
-}
+    // Vetores utilizados como buffer
+    vector<int> processos, endMemoria;
 
-void SecondaryMemory::write(string proc_id) {
-  return;
-}
 
-void SecondaryMemory::process_in_cpu(string proc_id, int instruction) {
-  return;
-}
+    // Caso a operação seja C, cria o processo
+    if (get<1>(i) == 'C') {
+      tamMemProcesso = get<2>(i);
+      cout << ">> Criando processo com ID: " << idProcesso << endl;
+      processos.push_back(contadorProc);
+      processos.push_back(tamMemProcesso);
+      processosEntrada.push_back(processos);
+      mapaIDsProc.insert(pair<int, int>(idProcesso, contadorProc)); 
+      listaDeProcessos.push_back(new Processo(contadorProc, tamMemProcesso, TAM_PAG));
+      contadorProc++;
+    } 
+    // Caso a operação seja de outro tipo, inicia as rotinas para tratar as requisições
+    else {
+      cout << ">> Iniciando processo de tratamento da requisição para o processo ID: " << idProcesso << endl;
+      endProcesso = get<2>(i);
+      endMemoria.push_back(mapaIDsProc[idProcesso]); // id da requisicao
+      endMemoria.push_back(endProcesso);
 
-void SecondaryMemory::send_to_io(string proc_id, int instruction) {
-  return;
+      contadorReq++;
+
+      switch(get<1>(i)) {
+        case 'R':
+        cout << "> Requisitando acesso de LEITURA ao endereço=(" << endProcesso << ")2" << "\n\n";
+          endMemoria.push_back(R_ACESS);
+          break;
+        case 'W':
+          cout << "> Requisitando acesso de ESCRITA ao endereço=(" << endProcesso << ")2" << "\n\n";
+          endMemoria.push_back(W_ACESS);
+          break;
+        case 'P':
+          cout << "> Requisitando processamento na CPU da instrução do endereço=(" << endProcesso << ")2" << "\n\n";
+          endMemoria.push_back(CPU_ACESS);
+          break;
+        case 'I':
+        cout << "> Requisitando execução de chamada IO com a instrução do endereço=(" << endProcesso << ")2" << "\n\n";
+          endMemoria.push_back(IO_ACESS);
+          break;
+        default:
+          cerr << "> ERRO: Tipo de acesso inválido: " << get<1>(i) << endl;
+      }
+
+      listaRequisicoes.push_back(endMemoria);
+    }
+  }
+
+  // PROCESSOS CARREGADOS
+  cout << ">> Processos carregados: " << listaDeProcessos.size() << "\n>>" ;
+  for (int i = 0; i < listaDeProcessos.size(); i++) {
+    cout << " P" << listaDeProcessos[i]->idProcesso << ";";
+  } cout << "\n\n"; 
+
+  // REQUISIÇÕES CARREGADAS
+  cout << ">> Requisições carregadas: " << listaRequisicoes.size() << endl;
+
+  qtdQuadros = qtdQuadrosMemPrincipal/listaDeProcessos.size();
+  cout << ">> Sincronizando memória virtual" << endl;
+  for(int i = 0; i < listaDeProcessos.size(); i++) {
+    for (int j = 0; j < qtdQuadros; j++) {
+      listaDeProcessos[i]->tabelaPaginas[j]->bitAlocacaoMemoria = 1;
+    }
+    memoriaVirtual.push_back(listaDeProcessos[i]->tabelaPaginas);
+  }
+  cout << "> Memória Virtual inicializada!" << endl;
+  cout << "> Tamanho: " << memoriaVirtual.size()<< endl;
+
+  cout << ">> Sincronizando a quantidade de quadros para cada processo na Memória Principal" << endl;
+  cout << "> Quantidade padrão de quadros por processo: " << qtdQuadros << endl;
+  for(int i = 0; i < listaDeProcessos.size(); i++) {
+    deque<Pagina*> quadros;
+
+    // Insere a memória virtual em todos os quadros
+    for(int j = 0; j < qtdQuadros; j++) {
+        quadros.push_back(memoriaVirtual[i][j]);
+    }
+
+    // Inserção dos quadros na memória principal
+    memoriaPrincipal.push_back(quadros);
+    cout << "> " << quadros.size() << " quadros inseridos na memória principal!" << endl;
+    quadros.clear();
+  }
+  cout << "> Memória principal populada!" << endl;
+  cout << "> Tamanho: " << memoriaPrincipal.size()<< "\n\n";
+
+  if (ALGO == "LRU") {
+    LRU(TAM_PAG, qtdQuadros);
+    cout << "Swaps de página: " << qtdSwapsPaginas << endl;
+    cout << "Faltas de página: " << qtdFaltaPag << endl;
+  } else {
+    Relogio(TAM_PAG, qtdQuadros);
+    cout << "Swaps de página: " << qtdSwapsPaginas << endl;
+    cout << "Faltas de página: " << qtdFaltaPag << endl;
+  }
 }
