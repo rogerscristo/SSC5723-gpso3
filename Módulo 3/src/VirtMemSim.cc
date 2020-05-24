@@ -18,8 +18,6 @@
 #define CPU_ACESS 3333
 #define IO_ACESS 4444
 
-
-
 ////////////////////
 // VARIÁVEIS GLOBAIS
 ////////////////////
