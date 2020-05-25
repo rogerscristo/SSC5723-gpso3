@@ -32,11 +32,11 @@ vector<vector<int> > listaRequisicoes;
 vector<Processo*> listaDeProcessos;
 
 // Um deque contendo os elementos da memória principal. O deque foi utilizado dada a necessidade de alguns algoritmos de remover elementos nos dois extremos
-deque<deque<Pagina*>> memoriaPrincipal;
+deque<deque<Pagina*> > memoriaPrincipal;
 
 // Representação da memória virtual na simulação
 // É representada por em vetor de vetores de páginas, que por sua vez contém cada processo.
-vector<vector<Pagina*>> memoriaVirtual;
+vector<vector<Pagina*> > memoriaVirtual;
 
 // Mapeamento do ID de entrada no input.txt para o ID de execução
 map<int, int> mapaIDsProc;
@@ -273,7 +273,7 @@ void Relogio(int tamPaginas, int qtdQuadros) {
               paginaEncontrada = true;
             }
 
-            // Se o bit de referencia for igual a 1, então é atribuido 0 para esse valor como forma de validar a utilização recente dessa página.
+            // Se o bit de referencia for igual a 1, então é atribuido 0 para esse valor como forma de validar a utilização recente dessa.
             if (paginaRelogio->bitReferencia == 1) {
               paginaRelogio->bitReferencia = 0;
             }
@@ -307,13 +307,13 @@ void Relogio(int tamPaginas, int qtdQuadros) {
 
 int main(int argc, char * const argv[]) {
   // Verifica se a entrada possui a quantidade correta de argumentos
-  if (argc != 2) {
+  if (argc != 3) {
     cerr << ">>> ERRO: Quantidade inválida de argumentos" << endl;
     return 1;
   }
 
   // Verifica a configuração do algoritmo a ser utilizado
-  if ((ALGO != "LRU") && (ALGO != "Relogio")) {
+  if ((argv[2] != "LRU") && (argv[2] != "Relogio")) {
     cerr << ">>> ERRO: Algoritmo inválido: " << ALGO << endl;
     return 1;
   }
@@ -430,17 +430,13 @@ int main(int argc, char * const argv[]) {
   cout << "> Memória principal populada!" << endl;
   cout << "> Tamanho: " << memoriaPrincipal.size()<< "\n\n";
 
-  vector<vector<Pagina*>> memoriaVirtualBackup = memoriaVirtual;
-  vector<vector<Pagina*>> memoriaPrincipalBackup = memoriaPrincipal;
-
-  LRU(TAM_PAG, qtdQuadros);
-  cout << "Swaps de página: " << qtdSwapsPaginas << endl;
-  cout << "Faltas de página: " << qtdFaltaPag << endl;
-
-  memoriaVirtual = memoriaVirtualBackup;
-  memoriaPrincipal = memoriaPrincipalBackup;
-
-  Relogio(TAM_PAG, qtdQuadros);
-  cout << "Swaps de página: " << qtdSwapsPaginas << endl;
-  cout << "Faltas de página: " << qtdFaltaPag << endl;
+  if (ALGO == "LRU") {
+    LRU(TAM_PAG, qtdQuadros);
+    cout << "Swaps de página: " << qtdSwapsPaginas << endl;
+    cout << "Faltas de página: " << qtdFaltaPag << endl;
+  } else {
+    Relogio(TAM_PAG, qtdQuadros);
+    cout << "Swaps de página: " << qtdSwapsPaginas << endl;
+    cout << "Faltas de página: " << qtdFaltaPag << endl;
+  }
 }
