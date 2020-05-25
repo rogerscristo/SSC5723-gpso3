@@ -3,7 +3,6 @@
 ////////////////////
 // CONFIGURAÇÃO
 ////////////////////
-#define ALGO "Relogio" // LRU ou Relogio
 #define TAM_MEM_FIS 128
 #define TAM_PAG 3
 
@@ -33,11 +32,11 @@ vector<vector<int> > listaRequisicoes;
 vector<Processo*> listaDeProcessos;
 
 // Um deque contendo os elementos da memória principal. O deque foi utilizado dada a necessidade de alguns algoritmos de remover elementos nos dois extremos
-deque<deque<Pagina*> > memoriaPrincipal;
+deque<deque<Pagina*>> memoriaPrincipal;
 
 // Representação da memória virtual na simulação
 // É representada por em vetor de vetores de páginas, que por sua vez contém cada processo.
-vector<vector<Pagina*> > memoriaVirtual;
+vector<vector<Pagina*>> memoriaVirtual;
 
 // Mapeamento do ID de entrada no input.txt para o ID de execução
 map<int, int> mapaIDsProc;
@@ -431,13 +430,17 @@ int main(int argc, char * const argv[]) {
   cout << "> Memória principal populada!" << endl;
   cout << "> Tamanho: " << memoriaPrincipal.size()<< "\n\n";
 
-  if (ALGO == "LRU") {
-    LRU(TAM_PAG, qtdQuadros);
-    cout << "Swaps de página: " << qtdSwapsPaginas << endl;
-    cout << "Faltas de página: " << qtdFaltaPag << endl;
-  } else {
-    Relogio(TAM_PAG, qtdQuadros);
-    cout << "Swaps de página: " << qtdSwapsPaginas << endl;
-    cout << "Faltas de página: " << qtdFaltaPag << endl;
-  }
+  vector<vector<Pagina*>> memoriaVirtualBackup = memoriaVirtual;
+  vector<vector<Pagina*>> memoriaPrincipalBackup = memoriaPrincipal;
+
+  LRU(TAM_PAG, qtdQuadros);
+  cout << "Swaps de página: " << qtdSwapsPaginas << endl;
+  cout << "Faltas de página: " << qtdFaltaPag << endl;
+
+  memoriaVirtual = memoriaVirtualBackup;
+  memoriaPrincipal = memoriaPrincipalBackup;
+
+  Relogio(TAM_PAG, qtdQuadros);
+  cout << "Swaps de página: " << qtdSwapsPaginas << endl;
+  cout << "Faltas de página: " << qtdFaltaPag << endl;
 }
