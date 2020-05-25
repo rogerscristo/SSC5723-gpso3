@@ -1,4 +1,5 @@
 #include "VirtMemSim.h"
+#include <string.h>
 
 ////////////////////
 // CONFIGURAÇÃO
@@ -312,8 +313,9 @@ int main(int argc, char * const argv[]) {
     return 1;
   }
 
+  char *ALGO = argv[2];
   // Verifica a configuração do algoritmo a ser utilizado
-  if ((argv[2] != "LRU") && (argv[2] != "Relogio")) {
+  if ((strcmp(ALGO, "LRU") != 0) && (strcmp(ALGO, "Relogio") != 0)) {
     cerr << ">>> ERRO: Algoritmo inválido: " << ALGO << endl;
     return 1;
   }
@@ -430,11 +432,13 @@ int main(int argc, char * const argv[]) {
   cout << "> Memória principal populada!" << endl;
   cout << "> Tamanho: " << memoriaPrincipal.size()<< "\n\n";
 
-  if (ALGO == "LRU") {
+  if (strcmp(ALGO, "LRU") == 0) {
     LRU(TAM_PAG, qtdQuadros);
     cout << "Swaps de página: " << qtdSwapsPaginas << endl;
     cout << "Faltas de página: " << qtdFaltaPag << endl;
-  } else {
+  } 
+  
+  if (strcmp(ALGO, "Relogio") == 0) {
     Relogio(TAM_PAG, qtdQuadros);
     cout << "Swaps de página: " << qtdSwapsPaginas << endl;
     cout << "Faltas de página: " << qtdFaltaPag << endl;
