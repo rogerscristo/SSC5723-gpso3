@@ -205,13 +205,14 @@ void Relogio(int tamPaginas, int qtdQuadros) {
     paginaEncontrada = false; // Verifica se o bit de referencia é igual a 0.
     idProcesso = listaRequisicoes[i][0];
     endMem = listaRequisicoes[i][1];
-    paginaRequisitada = menoriaVirtual[idProcesso][(endMem-1)/tamPaginas];
-    paginaRelogio = memoriaPrincipal[idProcesso][paginaAtual];
+    paginaRequisitada = memoriaVirtual[idProcesso][abs((endMem-1)/tamPaginas)];
+    paginaRelogio = memoriaPrincipal[idProcesso][numPagAtual];
 
     cout << ">> Iteração: " << i << endl;
     cout << "> ID do processo: " << idProcesso << endl;
     cout << "> Endereço de memória: " << endMem << endl;
 
+    tipoAcesso = listaRequisicoes[i][2];
     ExibirTipoAcesso(listaRequisicoes[i][2]);
 
     if ((tipoAcesso == R_ACESS) || (tipoAcesso == W_ACESS)) {
@@ -257,7 +258,8 @@ void Relogio(int tamPaginas, int qtdQuadros) {
           }
         }
       } else {
-        menoriaVirtual[idProcesso][(endMem-1)/tamPaginas] = 1;
+        cout << "> Pagina solicitada NÃO está contida na memória principal" << endl;
+        memoriaVirtual[idProcesso][abs((endMem-1)/tamPaginas)]->bitReferencia = 1;
       }
     }
   }
