@@ -1,3 +1,14 @@
+
+/*******************************************************************
+*
+Disciplina: SSC5723 - Sistemas Operacionais
+Grupo: gspso3 - 2020
+Repositório Github: https://github.com/rogerscristo/SSC5723-gpso3
+Alunos: Rogers Silva de Cristo          10355930
+        Cairo Mateus Neves Ribeiro      11925833
+*
+******************************************************************/
+
 #include "VirtMemSim.h"
 #include <string.h>
 
@@ -103,9 +114,12 @@ parsed_tuple_list parseiaEntrada(tuple_list entrada) {
   
   return entradaParseada;
 }
+///////////////////////
+// MÉTODOS PRINCIPAIS
+//////////////////////
 
 // Imprime o tipo de acesso na tela de acordo com o parâmentro informado.
-void ExibirTipoAcesso(int tipoAcesso) {
+void exibirTipoAcesso(int tipoAcesso) {
   switch (tipoAcesso) {
     case CPU_ACESS:
       cout << "> Tipo de acesso: Processo executando na CPU" << "\n\n";
@@ -159,7 +173,7 @@ void LRU(int tamPaginas, int qtdQuadros) {
     paginaRequisitada = memoriaVirtual[idProcesso][abs((endMem-1)/tamPaginas)];
 
     tipoAcesso = listaRequisicoes[i][2];
-    ExibirTipoAcesso(tipoAcesso);
+    exibirTipoAcesso(tipoAcesso);
 
     if ((tipoAcesso == R_ACESS) || (tipoAcesso == W_ACESS)) {
       cout << "> Processo: " << idProcesso << " requisitando página número: " << abs((endMem-1)/tamPaginas) << endl;
@@ -243,7 +257,7 @@ void Relogio(int tamPaginas, int qtdQuadros) {
 
     // Exibe o tipo de acesso que está sendo realizado.
     tipoAcesso = listaRequisicoes[i][2];
-    ExibirTipoAcesso(listaRequisicoes[i][2]);
+    exibirTipoAcesso(listaRequisicoes[i][2]);
 
     if ((tipoAcesso == R_ACESS) || (tipoAcesso == W_ACESS)) {
       
@@ -305,6 +319,10 @@ void Relogio(int tamPaginas, int qtdQuadros) {
     }
   }
 }
+
+////////
+// MAIN
+////////
 
 int main(int argc, char * const argv[]) {
   // Verifica se a entrada possui a quantidade correta de argumentos
