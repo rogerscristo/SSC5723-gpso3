@@ -209,11 +209,11 @@ void LRU(int tamPaginas, int qtdQuadros) {
               break;
           }
         }
-        // Apaga a página requisitada da memória principal
-        memoriaPrincipal[idProcesso].erase(memoriaPrincipal[idProcesso].begin() + endUsadoRecent);
-        cout << "> Página apagada do endereço requisitado" << endl;
-        memoriaPrincipal[idProcesso].push_back(paginaRequisitada); // Insere na memória principal
-        cout << "> Página inserida no endereço requisitado" << endl;
+      // Apaga a página requisitada da memória principal
+      memoriaPrincipal[idProcesso].erase(memoriaPrincipal[idProcesso].begin() + endUsadoRecent);
+      cout << "> Página apagada do endereço requisitado" << endl;
+      memoriaPrincipal[idProcesso].push_back(paginaRequisitada); // Insere na memória principal
+      cout << "> Página inserida no endereço requisitado" << endl;
       }
       cout << endl;
     }
