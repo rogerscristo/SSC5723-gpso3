@@ -42,7 +42,6 @@ class Pagina {
       int idPagina; // id único da página
       int bitAlocacaoMemoria;   // 1 se estiver na memória e 0 do contrário
       int bitReferencia;   // bit de referência usado no Relógio. Inicializado em 0
-      string tempoUltimoAcesso;
       
       Pagina (int idDoProcesso, int idDaPagina, int bitAlocacaoMemoria, int bitReferencia) {
           this->idProcesso = idDoProcesso;
