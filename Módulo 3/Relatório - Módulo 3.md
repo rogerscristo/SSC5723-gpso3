@@ -61,4 +61,19 @@ Todos os passos do algoritmo são retornados em um log na tela, facilitando o ac
         
 
 ## 4. Implementação Relógio
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Os quadros de página são organizados em torno de uma lista circular no formato de um relógio, onde o relógio aponta para a página mais antiga.
+
+No algoritmo do relógio se o bit R foi igual a zero o quadro de página é selecionado para a substituição de página. O próximo quadro de página é selecionado e é então verificado o bit R. Caso a lista seja percorrida e voltar ao quadro de página inicial esse quadro é selecionado para remoção por ser o mais antigo.
+
+O algoritmo foi implementado da seguinte forma:
+
+- Percorre o vetor de requisições (e.g. R, W, P e I) e, para cada um, realiza sua operação correspondente.
+    - Caso haja falta de página, imprime na tela uma mensagem e incrementa o contador de faltas de páginas. Após isso, continua a execução normalmente.
+    - Caso o tipo de acesso seja P ou I, imprime na tela a descrição da requisição e continua a execução para as requisições seguintes.
+    - Nos casos dos tipos de acesso R ou W, o algoritmo inicia a execução propriamente dita do relógio:
+        - Enquanto o quadro de página não for encontrado executa o loop.
+        - Se o bit de referência for igual a 0, então a página é selecionada para substituição de página.
+        - Se não, muda para a próxima página e verifica se essa é a página final.
+        - Esse processo é realizado até encontrar a página para substituição.
+
+Todos os passos do algoritmo são retornados em um log na tela, facilitando o acompanhamento da execução.
