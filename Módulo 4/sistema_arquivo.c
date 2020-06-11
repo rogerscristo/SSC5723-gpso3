@@ -28,6 +28,8 @@ int main (int argc, char argv[]) {
 	    	fputc('\0', fp);
 	    	fclose(fp);
 	    	tempo_fim = clock();
+			tempoExecucao = calcular_tempo_em_segundos(tempo_inicio, tempo_fim);
+			printf("Tempo execução (criacao): %f\n", tempoExecucao);
 	    	
 	    	// Le os arquivos de acordo com a entrada.
 	    	tempo_inicio = clock();
@@ -35,11 +37,15 @@ int main (int argc, char argv[]) {
 			while (fgets(buffer, KILOBYTE, fp) != NULL);
 	    	fclose(fp);
 	    	tempo_fim = clock();
-	    	
+	    	tempoExecucao = calcular_tempo_em_segundos(tempo_inicio, tempo_fim);
+			printf("Tempo execução (leitura): %f\n", tempoExecucao);
+			
 	    	// Remove os arquivos.
 	    	tempo_inicio = clock();
 	    	remove(nomeArquivo[i]);
 			tempo_fim = clock();
+			tempoExecucao = calcular_tempo_em_segundos(tempo_inicio, tempo_fim);
+			printf("Tempo execução (remocao): %f\n\n", tempoExecucao);
 		}
 	}
 	
