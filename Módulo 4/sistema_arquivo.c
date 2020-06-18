@@ -7,7 +7,7 @@
 #define KILOBYTE 1024
 #define MEGABYTE 1048576
 #define TOTAL_ARQUIVOS 7
-#define TOTAL_ITERACOES 100
+#define TOTAL_ITERACOES 10
 
 void save_csv(char *nome_arquivo, double *logs_criacao, double *logs_leitura, double *logs_remocao);
 double calcular_tempo_em_segundos(clock_t, clock_t);
@@ -29,6 +29,7 @@ int main (int argc, char argv[]) {
 		double logs_criacao[TOTAL_ITERACOES];
 		for (int j = 0; j < TOTAL_ITERACOES; j++) {
 			sprintf(nome, "%d", j);
+			//char *caminho = strcat(caminho_pendrive, nome);
 			logs_criacao[j] = cria_arquivo(tamArquivos[i], nome);
 		}
 		
@@ -36,6 +37,7 @@ int main (int argc, char argv[]) {
 		double logs_leitura[TOTAL_ITERACOES];
 		for (int j = 0; j < TOTAL_ITERACOES; j++) {
 			sprintf(nome, "%d", j);
+			//char *caminho = strcat(caminho_pendrive, nome);
 			logs_leitura[j] = le_arquivo(nome);
 		}
 
@@ -43,10 +45,12 @@ int main (int argc, char argv[]) {
 		double logs_remocao[TOTAL_ITERACOES];
 		for (int j = 0; j < TOTAL_ITERACOES; j++) {
 			sprintf(nome, "%d", j);
+			//char *caminho = strcat(caminho_pendrive, nome);
 			logs_remocao[j] = remove_arquivo(nome);
 		}
 
-		printf("== Salvando arquivo de log %s\n", nomeArquivo[i]);
+		//char *caminho = strcat(tipo_particao, nomeArquivo[i]);
+		printf("== Salvando arquivo de log\n");
 		save_csv(nomeArquivo[i], logs_criacao, logs_leitura, logs_remocao);
 		printf("== Experimento concluído!\n\n");
 	}

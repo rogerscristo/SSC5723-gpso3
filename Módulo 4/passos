@@ -1,0 +1,2 @@
+No fat32 foi utilizada a flag exec durante o mount para garantir que seria possível executar o programa em C dentro do pendrive
+sudo mount -o exec /dev/sdc1 /media/rogers/pendrive
