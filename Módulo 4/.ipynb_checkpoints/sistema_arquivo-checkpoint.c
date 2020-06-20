@@ -1,14 +1,3 @@
-
-/*******************************************************************
-*
-Disciplina: SSC5723 - Sistemas Operacionais
-Grupo: gspso3 - 2020
-Repositório Github: https://github.com/rogerscristo/SSC5723-gpso3
-Alunos: Rogers Silva de Cristo          10355930
-        Cairo Mateus Neves Ribeiro      11925833
-*
-******************************************************************/
-
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,6 +29,7 @@ int main (int argc, char argv[]) {
 		double logs_criacao[TOTAL_ITERACOES];
 		for (int j = 0; j < TOTAL_ITERACOES; j++) {
 			sprintf(nome, "%d", j);
+			//char *caminho = strcat(caminho_pendrive, nome);
 			logs_criacao[j] = cria_arquivo(tamArquivos[i], nome);
 		}
 		
@@ -47,6 +37,7 @@ int main (int argc, char argv[]) {
 		double logs_leitura[TOTAL_ITERACOES];
 		for (int j = 0; j < TOTAL_ITERACOES; j++) {
 			sprintf(nome, "%d", j);
+			//char *caminho = strcat(caminho_pendrive, nome);
 			logs_leitura[j] = le_arquivo(nome);
 		}
 
@@ -54,9 +45,11 @@ int main (int argc, char argv[]) {
 		double logs_remocao[TOTAL_ITERACOES];
 		for (int j = 0; j < TOTAL_ITERACOES; j++) {
 			sprintf(nome, "%d", j);
+			//char *caminho = strcat(caminho_pendrive, nome);
 			logs_remocao[j] = remove_arquivo(nome);
 		}
 
+		//char *caminho = strcat(tipo_particao, nomeArquivo[i]);
 		printf("== Salvando arquivo de log\n");
 		save_csv(nomeArquivo[i], logs_criacao, logs_leitura, logs_remocao);
 		printf("== Experimento concluído!\n\n");
@@ -101,6 +94,7 @@ double cria_arquivo(int tamArquivo, char *nomeArquivo) {
 	fclose(fp);
 	tempo_fim = clock();
 	tempoExecucao = calcular_tempo_em_segundos(tempo_inicio, tempo_fim);
+	//printf("Tempo execução (criacao): %f\n", tempoExecucao);
 	return tempoExecucao;
 }
 
